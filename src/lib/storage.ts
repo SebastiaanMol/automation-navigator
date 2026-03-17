@@ -24,6 +24,10 @@ const SEED_DATA: Automatisering[] = [
     B --> C{Webhook}
     C -->|POST| D[Slack API]
     D --> E[#sales Melding]`,
+    koppelingen: [
+      { doelId: "AUTO-002", label: "Geen reactie op deal" },
+      { doelId: "AUTO-003", label: "Deal akkoord → Klantenbestand" },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -48,6 +52,9 @@ const SEED_DATA: Automatisering[] = [
     B --> C[Template Ophalen]
     C --> D[E-mail Versturen]
     D --> E[Lead Onboarded]`,
+    koppelingen: [
+      { doelId: "AUTO-001", label: "Klant reageert → terug naar Sales flow" },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -74,10 +81,10 @@ const SEED_DATA: Automatisering[] = [
     C --> D[Data Aggregatie]
     D --> E[CSV Generatie]
     E --> F[SharePoint Upload]`,
+    koppelingen: [],
     createdAt: new Date().toISOString(),
   },
 ];
-
 export function getAutomatiseringen(): Automatisering[] {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
