@@ -117,6 +117,7 @@ export default function AlleAutomatiseringen() {
                 <CategorieBadge categorie={a.categorie} />
                 <SystemBadge systeem={a.systemen[0] || "Anders"} />
                 <StatusBadge status={a.status} />
+                <VerificatieBadge item={a} />
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </button>

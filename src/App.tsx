@@ -40,6 +40,7 @@ function ProtectedRoutes() {
         <Route path="/bewerk/:id" element={<BewerkAutomatisering />} />
         <Route path="/bpmn" element={<BPMNViewer />} />
         <Route path="/mindmap" element={<Mindmap />} />
+        <Route path="/verificatie" element={<Verificatie />} />
         <Route path="/analyse" element={<Analyse />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
