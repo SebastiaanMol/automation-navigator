@@ -22,7 +22,9 @@ export type Database = {
           created_by: string | null
           doel: string
           fasen: string[]
+          geverifieerd_door: string
           id: string
+          laatst_geverifieerd: string | null
           mermaid_diagram: string
           naam: string
           owner: string
@@ -39,7 +41,9 @@ export type Database = {
           created_by?: string | null
           doel?: string
           fasen?: string[]
+          geverifieerd_door?: string
           id: string
+          laatst_geverifieerd?: string | null
           mermaid_diagram?: string
           naam: string
           owner?: string
@@ -56,7 +60,9 @@ export type Database = {
           created_by?: string | null
           doel?: string
           fasen?: string[]
+          geverifieerd_door?: string
           id?: string
+          laatst_geverifieerd?: string | null
           mermaid_diagram?: string
           naam?: string
           owner?: string
