@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Automatisering, CATEGORIEEN, SYSTEMEN, STATUSSEN, Systeem, Categorie, Status, Koppeling } from "@/lib/types";
+import { Automatisering, CATEGORIEEN, SYSTEMEN, STATUSSEN, KLANT_FASEN, Systeem, Categorie, Status, KlantFase, Koppeling } from "@/lib/types";
 import { generateId, saveAutomatisering, getAutomatiseringen } from "@/lib/storage";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
