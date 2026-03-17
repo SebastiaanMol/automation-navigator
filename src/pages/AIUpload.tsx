@@ -339,6 +339,7 @@ export default function AIUpload() {
       const fallbackResults = rows.map(mapRow);
       setCsvResults(fallbackResults);
       setSavedIds(new Set());
+      setSkippedIds(new Set());
       setLoading(false);
       toast.success(`${fallbackResults.length} automatisering(en) gevonden in JSON (lokaal)`);
     } catch (e) {
