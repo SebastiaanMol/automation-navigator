@@ -584,10 +584,11 @@ export default function AIUpload() {
                 Alles opslaan ({csvResults.length - savedIds.size})
               </button>
               <button
-                onClick={() => {
-                  setCsvResults([]);
-                  setSavedIds(new Set());
-                }}
+                  onClick={() => {
+                    setCsvResults([]);
+                    setSavedIds(new Set());
+                    setSkippedIds(new Set());
+                  }}
                 className="text-sm text-muted-foreground hover:underline px-3 py-2"
               >
                 Opnieuw uploaden
