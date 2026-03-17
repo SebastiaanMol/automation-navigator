@@ -291,6 +291,7 @@ export default function AIUpload() {
       status: item.mapped.status || "Actief",
       verbeterideeën: item.mapped.verbeterideeën || "",
       mermaidDiagram: item.mapped.mermaidDiagram || "",
+      koppelingen: [],
       createdAt: new Date().toISOString(),
     };
     saveAutomatisering(full);

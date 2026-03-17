@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Automatisering, CATEGORIEEN, SYSTEMEN, STATUSSEN, Systeem, Categorie, Status } from "@/lib/types";
-import { generateId, saveAutomatisering } from "@/lib/storage";
+import { Automatisering, CATEGORIEEN, SYSTEMEN, STATUSSEN, Systeem, Categorie, Status, Koppeling } from "@/lib/types";
+import { generateId, saveAutomatisering, getAutomatiseringen } from "@/lib/storage";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 interface NieuweAutomatiseringProps {
   prefill?: Partial<Automatisering>;
@@ -15,6 +16,8 @@ interface NieuweAutomatiseringProps {
 
 export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringProps) {
   const navigate = useNavigate();
+  const allAutomatiseringen = useMemo(() => getAutomatiseringen(), []);
+
   const [form, setForm] = useState<Partial<Automatisering>>({
     naam: "",
     categorie: "HubSpot Workflow",
@@ -27,6 +30,7 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
     status: "Actief",
     verbeterideeën: "",
     mermaidDiagram: "",
+    koppelingen: [],
     ...prefill,
   });
 
@@ -46,6 +50,22 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
   const addStap = () => set("stappen", [...(form.stappen || []), ""]);
   const removeStap = (idx: number) => set("stappen", (form.stappen || []).filter((_, i) => i !== idx));
 
+  const addKoppeling = (doelId: string) => {
+    const koppelingen = form.koppelingen || [];
+    if (koppelingen.some((k) => k.doelId === doelId)) return;
+    set("koppelingen", [...koppelingen, { doelId, label: "" }]);
+  };
+
+  const updateKoppelingLabel = (idx: number, label: string) => {
+    const koppelingen = [...(form.koppelingen || [])];
+    koppelingen[idx] = { ...koppelingen[idx], label };
+    set("koppelingen", koppelingen);
+  };
+
+  const removeKoppeling = (idx: number) => {
+    set("koppelingen", (form.koppelingen || []).filter((_, i) => i !== idx));
+  };
+
   const submit = () => {
     if (!form.naam?.trim()) {
       toast.error("Naam is verplicht");
@@ -64,12 +84,17 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
       status: form.status as Status,
       verbeterideeën: form.verbeterideeën || "",
       mermaidDiagram: form.mermaidDiagram || "",
+      koppelingen: (form.koppelingen || []).filter((k) => k.doelId),
       createdAt: new Date().toISOString(),
     };
     saveAutomatisering(item);
     toast.success(`${item.id} opgeslagen`);
     navigate("/alle");
   };
+
+  const availableForKoppeling = allAutomatiseringen.filter(
+    (a) => !(form.koppelingen || []).some((k) => k.doelId === a.id)
+  );
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -122,6 +147,43 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
             </div>
           ))}
           <button onClick={addStap} className="text-sm text-ring hover:underline">+ Stap toevoegen</button>
+        </div>
+      </Field>
+
+      <Field label="Gekoppeld aan (andere automatiseringen)">
+        <div className="space-y-2">
+          {(form.koppelingen || []).map((k, idx) => {
+            const target = allAutomatiseringen.find((a) => a.id === k.doelId);
+            return (
+              <div key={idx} className="flex gap-2 items-center bg-secondary rounded-[var(--radius-inner)] p-2">
+                <span className="text-xs font-mono font-semibold text-foreground shrink-0">{k.doelId}</span>
+                <span className="text-xs text-muted-foreground truncate shrink-0">{target?.naam || "Onbekend"}</span>
+                <Input
+                  value={k.label}
+                  onChange={(e) => updateKoppelingLabel(idx, e.target.value)}
+                  placeholder="Beschrijf de koppeling (bijv. 'Deal aangemaakt')"
+                  className="text-xs h-8"
+                />
+                <button onClick={() => removeKoppeling(idx)} className="text-destructive shrink-0 hover:opacity-70">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            );
+          })}
+          {availableForKoppeling.length > 0 && (
+            <Select onValueChange={(v) => addKoppeling(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="+ Koppeling toevoegen..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableForKoppeling.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.id} — {a.naam}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </Field>
 

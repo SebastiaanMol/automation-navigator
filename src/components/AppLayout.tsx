@@ -7,6 +7,7 @@ import {
   BarChart3,
   Menu,
   X,
+  Map,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -14,6 +15,7 @@ const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Nieuwe Automatisering", url: "/nieuw", icon: PlusCircle },
   { title: "Alle Automatiseringen", url: "/alle", icon: List },
+  { title: "Mindmap", url: "/mindmap", icon: Map },
   { title: "BPMN Viewer", url: "/bpmn", icon: GitBranch },
   { title: "Analyse", url: "/analyse", icon: BarChart3 },
 ];
