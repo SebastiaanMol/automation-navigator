@@ -684,7 +684,7 @@ export default function AIUpload() {
                       </div>
                     </div>
 
-                    {!isSaved && (
+                    {!isSaved && !isSkipped && (
                       <button
                         onClick={() => saveOne(idx)}
                         className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
@@ -695,6 +695,11 @@ export default function AIUpload() {
                     {isSaved && (
                       <p className="text-sm text-primary font-medium flex items-center gap-1">
                         <Check className="h-4 w-4" /> Opgeslagen
+                      </p>
+                    )}
+                    {isSkipped && (
+                      <p className="text-sm text-muted-foreground font-medium">
+                        Bestaat al in portaal (overgeslagen)
                       </p>
                     )}
                   </div>
