@@ -239,6 +239,11 @@ export default function AIUpload() {
   const processJSON = async (content: string) => {
     try {
       let parsed = JSON.parse(content);
+      
+      // Detect Zapier export format: { metadata: {...}, zaps: [...] }
+      if (!Array.isArray(parsed) && parsed.zaps && Array.isArray(parsed.zaps)) {
+        parsed = parsed.zaps;
+      }
       // Support both array and single object
       if (!Array.isArray(parsed)) parsed = [parsed];
       if (parsed.length === 0) {
@@ -247,64 +252,93 @@ export default function AIUpload() {
         return;
       }
       // Flatten nested objects to string values for uniform processing
-      const rows: Record<string, string>[] = parsed.map((item: any) => {
-        const row: Record<string, string> = {};
-        for (const [key, val] of Object.entries(item)) {
-          if (Array.isArray(val)) row[key] = val.join("; ");
-          else if (typeof val === "object" && val !== null) row[key] = JSON.stringify(val);
-          else row[key] = String(val ?? "");
+      const flattenObj = (obj: any, prefix = ""): Record<string, string> => {
+        const result: Record<string, string> = {};
+        for (const [key, val] of Object.entries(obj)) {
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+          if (Array.isArray(val)) {
+            // For arrays of primitives, join them
+            if (val.length > 0 && typeof val[0] !== "object") {
+              result[fullKey] = val.join("; ");
+            } else if (val.length > 0) {
+              // For arrays of objects (like steps), extract names/descriptions
+              result[fullKey] = val.map((v: any) => 
+                v?.name || v?.action_type || v?.app || JSON.stringify(v)
+              ).join("; ");
+            }
+          } else if (typeof val === "object" && val !== null) {
+            // Flatten one level deep for important nested objects
+            const nested = flattenObj(val, fullKey);
+            Object.assign(result, nested);
+          } else {
+            result[fullKey] = String(val ?? "");
+          }
         }
-        return row;
-      });
-      // Use same AI flow as CSV
-      const localResults = rows.map(mapRow);
-      try {
-        toast.info("AI analyseert je Zapier JSON data...");
-        const { data: result, error } = await supabase.functions.invoke("extract-automation", {
-          body: { type: "csv_rows", data: rows },
-        });
-        if (error) throw error;
-        const aiAutomations = result?.automations;
-        if (aiAutomations && aiAutomations.length > 0) {
-          const aiResults: ParsedAutomation[] = aiAutomations.map((auto: any, idx: number) => ({
-            raw: rows[idx] || rows[0],
-            mapped: {
-              naam: auto.naam,
-              categorie: auto.categorie as Categorie,
-              doel: auto.doel,
-              trigger: auto.trigger,
-              systemen: auto.systemen as Systeem[],
-              stappen: auto.stappen,
-              afhankelijkheden: auto.afhankelijkheden || "",
-              owner: auto.owner || "",
-              status: auto.status as Status,
-              verbeterideeën: auto.verbeterideeën || "",
-              mermaidDiagram: generateMermaid(auto.naam, auto.stappen || []),
-            },
-            beschrijving: auto.beschrijving || generateBeschrijving({
-              naam: auto.naam,
-              categorie: auto.categorie,
-              trigger: auto.trigger,
-              doel: auto.doel,
-              systemen: auto.systemen,
-              stappen: auto.stappen,
-              status: auto.status,
-            }),
-          }));
-          setCsvResults(aiResults);
-          setSavedIds(new Set());
-          setLoading(false);
-          toast.success(`AI heeft ${aiResults.length} automatisering(en) geanalyseerd`);
-          return;
+        return result;
+      };
+      
+      const rows: Record<string, string>[] = parsed.map((item: any) => flattenObj(item));
+      // Send in batches of max 10 to avoid compute limits
+      const BATCH_SIZE = 10;
+      const allAiResults: ParsedAutomation[] = [];
+      
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        try {
+          toast.info(`AI analyseert batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(rows.length / BATCH_SIZE)}...`);
+          const { data: result, error } = await supabase.functions.invoke("extract-automation", {
+            body: { type: "csv_rows", data: batch },
+          });
+          if (error) throw error;
+          const aiAutomations = result?.automations;
+          if (aiAutomations && aiAutomations.length > 0) {
+            aiAutomations.forEach((auto: any, idx: number) => {
+              allAiResults.push({
+                raw: rows[i + idx] || rows[0],
+                mapped: {
+                  naam: auto.naam,
+                  categorie: auto.categorie as Categorie,
+                  doel: auto.doel,
+                  trigger: auto.trigger,
+                  systemen: auto.systemen as Systeem[],
+                  stappen: auto.stappen,
+                  afhankelijkheden: auto.afhankelijkheden || "",
+                  owner: auto.owner || "",
+                  status: auto.status as Status,
+                  verbeterideeën: auto.verbeterideeën || "",
+                  mermaidDiagram: generateMermaid(auto.naam, auto.stappen || []),
+                },
+                beschrijving: auto.beschrijving || generateBeschrijving({
+                  naam: auto.naam,
+                  categorie: auto.categorie,
+                  trigger: auto.trigger,
+                  doel: auto.doel,
+                  systemen: auto.systemen,
+                  stappen: auto.stappen,
+                  status: auto.status,
+                }),
+              });
+            });
+          }
+        } catch (e: any) {
+          console.error(`AI JSON batch ${i} error:`, e);
         }
-      } catch (e: any) {
-        console.error("AI JSON extraction error:", e);
-        toast.warning("AI-analyse niet beschikbaar, lokale extractie gebruikt.");
       }
-      setCsvResults(localResults);
+      
+      if (allAiResults.length > 0) {
+        setCsvResults(allAiResults);
+        setSavedIds(new Set());
+        setLoading(false);
+        toast.success(`AI heeft ${allAiResults.length} automatisering(en) geanalyseerd`);
+        return;
+      }
+      
+      toast.warning("AI-analyse niet beschikbaar, lokale extractie gebruikt.");
+      const fallbackResults = rows.map(mapRow);
+      setCsvResults(fallbackResults);
       setSavedIds(new Set());
       setLoading(false);
-      toast.success(`${localResults.length} automatisering(en) gevonden in JSON (lokaal)`);
+      toast.success(`${fallbackResults.length} automatisering(en) gevonden in JSON (lokaal)`);
     } catch (e) {
       console.error("JSON parse error:", e);
       toast.error("Ongeldig JSON-bestand. Controleer het formaat.");
