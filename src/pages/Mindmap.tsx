@@ -39,7 +39,7 @@ const SYSTEM_COLORS: Record<string, string> = {
 
 const SYSTEM_BG: Record<string, string> = {
   HubSpot: "rgba(255,122,89,0.12)",
-  Zapier: "rgba(255,74,0,0.12)",
+  Zapier: "rgba(101,163,13,0.12)",
   Typeform: "rgba(38,38,39,0.08)",
   SharePoint: "rgba(3,131,135,0.12)",
   WeFact: "rgba(46,204,113,0.12)",
