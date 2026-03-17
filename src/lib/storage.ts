@@ -90,6 +90,8 @@ const SEED_DATA: Automatisering[] = [
     koppelingen: [],
     fasen: ["Boekhouding"],
     createdAt: new Date().toISOString(),
+    laatstGeverifieerd: null,
+    geverifieerdDoor: "",
   },
 ];
 

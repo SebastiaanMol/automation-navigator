@@ -100,6 +100,8 @@ export default function NieuweAutomatisering({ prefill, editMode, editId }: Nieu
       koppelingen: (form.koppelingen || []).filter((k) => k.doelId),
       fasen: (form.fasen || []) as KlantFase[],
       createdAt: prefill?.createdAt || new Date().toISOString(),
+      laatstGeverifieerd: prefill?.laatstGeverifieerd || null,
+      geverifieerdDoor: prefill?.geverifieerdDoor || "",
     };
 
     try {
