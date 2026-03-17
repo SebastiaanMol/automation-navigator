@@ -75,7 +75,8 @@ function ChartCard({ title, data, colors }: { title: string; data: { name: strin
   );
 }
 
-function groupBy<T extends Record<string, unknown>>(arr: T[], key: keyof T): { name: string; count: number }[] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function groupBy(arr: any[], key: string): { name: string; count: number }[] {
   const counts: Record<string, number> = {};
   arr.forEach((item) => {
     const val = String(item[key] || "Onbekend");
