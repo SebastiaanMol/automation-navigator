@@ -8,7 +8,7 @@ import { Upload, FileText, Loader2, FileSpreadsheet, ChevronDown, Check, Sparkle
 import { StatusBadge, CategorieBadge, SystemBadge } from "@/components/Badges";
 import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "tekst" | "csv";
+type Tab = "tekst" | "bestand";
 
 interface ParsedAutomation {
   raw: Record<string, string>;
