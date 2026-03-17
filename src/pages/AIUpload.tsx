@@ -169,7 +169,7 @@ function generateMermaid(naam: string, stappen: string[]): string {
 }
 
 export default function AIUpload() {
-  const [tab, setTab] = useState<Tab>("csv");
+  const [tab, setTab] = useState<Tab>("bestand");
   const [text, setText] = useState("");
   const [prefill, setPrefill] = useState<Partial<Automatisering> | null>(null);
   const [loading, setLoading] = useState(false);
