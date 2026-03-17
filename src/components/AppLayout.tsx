@@ -16,7 +16,6 @@ const navItems = [
   { title: "Nieuwe Automatisering", url: "/nieuw", icon: PlusCircle },
   { title: "Alle Automatiseringen", url: "/alle", icon: List },
   { title: "BPMN Viewer", url: "/bpmn", icon: GitBranch },
-  { title: "AI Upload", url: "/ai-upload", icon: Upload },
   { title: "Analyse", url: "/analyse", icon: BarChart3 },
 ];
 
