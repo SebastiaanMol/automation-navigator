@@ -1,6 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Automatisering, Koppeling, KlantFase, Systeem, Categorie, Status } from "./types";
 
+function toFriendlyDbError(error: any): Error {
+  const message = String(error?.message || "").toLowerCase();
+  const isDuplicateName =
+    error?.code === "23505" &&
+    (message.includes("automatiseringen_naam") ||
+      message.includes("naam_normalized") ||
+      message.includes("duplicate key"));
+
+  if (isDuplicateName) {
+    return new Error("Er bestaat al een automatisering met (bijna) dezelfde naam.");
+  }
+
+  return error instanceof Error ? error : new Error("Databasefout");
+}
+
 // --- Fetch all automatiseringen with their koppelingen ---
 export async function fetchAutomatiseringen(): Promise<Automatisering[]> {
   const { data: rows, error } = await supabase
