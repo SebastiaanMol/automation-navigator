@@ -405,7 +405,7 @@ function buildGraph(
 // --- Component ---
 export default function Mindmap() {
   const navigate = useNavigate();
-  const automatiseringen = useMemo(() => getAutomatiseringen(), []);
+  const { data: automatiseringen = [], isLoading } = useAutomatiseringen();
   const allSmartEdges = useMemo(() => computeSmartEdges(automatiseringen), [automatiseringen]);
 
   const [systemFilter, setSystemFilter] = useState<Set<string>>(new Set());
