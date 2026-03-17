@@ -229,7 +229,7 @@ export default function Mindmap() {
   const [ownerFilter, setOwnerFilter] = useState<Set<string>>(new Set());
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const [edgeTypeFilter, setEdgeTypeFilter] = useState<Set<EdgeType>>(
-    new Set(["explicit", "shared_system", "trigger_match", "shared_owner"])
+    new Set(["explicit"])
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [highlightId, setHighlightId] = useState<string | null>(null);
