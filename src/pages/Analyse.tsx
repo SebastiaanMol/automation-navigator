@@ -74,9 +74,18 @@ function findCascadeFailures(
 }
 
 export default function Analyse() {
-  const data = useMemo(() => getAutomatiseringen(), []);
+  const { data: fetchedData, isLoading } = useAutomatiseringen();
+  const data = fetchedData || [];
   const smartEdges = useMemo(() => computeSmartEdges(data), [data]);
   const [expandedFailure, setExpandedFailure] = useState<string | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const categorieData = groupBy(data, "categorie");
   const statusData = groupBy(data, "status");
