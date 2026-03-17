@@ -80,6 +80,8 @@ export default function Analyse() {
   const data = fetchedData || [];
   const smartEdges = useMemo(() => computeSmartEdges(data), [data]);
   const [expandedFailure, setExpandedFailure] = useState<string | null>(null);
+  const [impactFilter, setImpactFilter] = useState<string>("alle");
+  const [complexFilter, setComplexFilter] = useState<string>("alle");
 
   const categorieData = useMemo(() => groupBy(data, "categorie"), [data]);
   const statusData = useMemo(() => groupBy(data, "status"), [data]);
