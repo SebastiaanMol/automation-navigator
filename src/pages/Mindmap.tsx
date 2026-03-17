@@ -142,16 +142,14 @@ function buildGraph(
     const sys = getPrimarySystem(a);
     const color = SYSTEM_COLORS[sys] || "#64748b";
     const conns = countConnections(a.id, visibleEdges);
-    const baseSize = 180;
-    const sizeBoost = Math.min(conns * 8, 60);
-    const width = baseSize + sizeBoost;
+    const width = 200;
     const isHighlighted = highlightId === a.id;
     const isSearchMatch = searchQuery && a.naam.toLowerCase().includes(searchQuery.toLowerCase());
 
     return {
       id: a.id,
       type: "default",
-      position: { x: 0, y: 0 }, // Will be set by dagre
+      position: { x: 0, y: 0 },
       data: {
         label: (
           <div className="text-left leading-tight">
@@ -160,9 +158,12 @@ function buildGraph(
               <span>{CATEGORY_ICONS[a.categorie] || "📦"}</span>
               <span>{STATUS_ICON[a.status] || ""}</span>
             </div>
-            <div className="font-semibold text-xs mt-1 leading-snug" style={{ maxWidth: width - 32 }}>
+            <div className="font-semibold text-xs mt-1 leading-snug truncate" style={{ maxWidth: 160 }}>
               {a.naam}
             </div>
+            {conns > 0 && (
+              <div className="text-[9px] text-muted-foreground mt-0.5 opacity-60">{conns} verbinding{conns > 1 ? "en" : ""}</div>
+            )}
           </div>
         ),
       },
@@ -176,12 +177,10 @@ function buildGraph(
         fontSize: "12px",
         boxShadow: isHighlighted || isSearchMatch
           ? `0 0 0 3px ${color}, 0 0 20px ${color}60`
-          : `0 2px 8px rgba(0,0,0,0.06)`,
-        transition: "box-shadow 0.3s ease",
-        ...(isSearchMatch && searchQuery ? { animation: "pulse 1.5s infinite" } : {}),
+          : `0 1px 4px rgba(0,0,0,0.05)`,
       },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
+      sourcePosition: Position.Bottom,
+      targetPosition: Position.Top,
     };
   });
 
