@@ -54,6 +54,8 @@ export async function fetchAutomatiseringen(): Promise<Automatisering[]> {
     koppelingen: kopMap[r.id] || [],
     fasen: (r.fasen || []) as KlantFase[],
     createdAt: r.created_at,
+    laatstGeverifieerd: r.laatst_geverifieerd,
+    geverifieerdDoor: r.geverifieerd_door,
   }));
 }
 
