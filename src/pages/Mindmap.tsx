@@ -275,8 +275,8 @@ function buildGraph(
     };
   });
 
-  // Apply dagre layout
-  const layoutNodes = applyDagreLayout(nodes, edges);
+  // Apply radial layout
+  const layoutNodes = applyRadialLayout(nodes, edges);
   return { nodes: layoutNodes, edges };
 }
 
