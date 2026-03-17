@@ -84,26 +84,93 @@ function getPrimarySystem(auto: Automatisering): string {
   return auto.systemen[0] || "API";
 }
 
-// --- Dagre layout ---
-function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 250, edgesep: 30, marginx: 60, marginy: 60 });
+// --- Radial mindmap layout ---
+function applyRadialLayout(nodes: Node[], edges: Edge[]): Node[] {
+  if (nodes.length === 0) return nodes;
 
-  nodes.forEach((n) => {
-    const w = (n.style?.width as number) || 200;
-    const h = (n.style?.height as number) || 70;
-    g.setNode(n.id, { width: w + 40, height: h + 30 });
-  });
+  // Build adjacency from edges
+  const adj: Record<string, Set<string>> = {};
+  nodes.forEach((n) => (adj[n.id] = new Set()));
   edges.forEach((e) => {
-    g.setEdge(e.source, e.target);
+    adj[e.source]?.add(e.target);
+    adj[e.target]?.add(e.source);
   });
 
-  Dagre.layout(g);
+  // Find the most-connected node as center
+  let centerId = nodes[0].id;
+  let maxConns = 0;
+  nodes.forEach((n) => {
+    const c = adj[n.id]?.size || 0;
+    if (c > maxConns) {
+      maxConns = c;
+      centerId = n.id;
+    }
+  });
+
+  // BFS to assign layers
+  const layers: Record<string, number> = { [centerId]: 0 };
+  const queue = [centerId];
+  const order: string[] = [centerId];
+  const visited = new Set([centerId]);
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    for (const nb of adj[cur] || []) {
+      if (!visited.has(nb)) {
+        visited.add(nb);
+        layers[nb] = (layers[cur] || 0) + 1;
+        queue.push(nb);
+        order.push(nb);
+      }
+    }
+  }
+  // Place disconnected nodes
+  nodes.forEach((n) => {
+    if (!visited.has(n.id)) {
+      visited.add(n.id);
+      layers[n.id] = 1;
+      order.push(n.id);
+    }
+  });
+
+  // Group by layer
+  const layerGroups: Record<number, string[]> = {};
+  let maxLayer = 0;
+  order.forEach((id) => {
+    const l = layers[id] || 0;
+    if (!layerGroups[l]) layerGroups[l] = [];
+    layerGroups[l].push(id);
+    if (l > maxLayer) maxLayer = l;
+  });
+
+  // Position: center at origin, rings outward
+  const RING_DISTANCE = 280;
+  const positions: Record<string, { x: number; y: number }> = {};
+
+  // Center node
+  (layerGroups[0] || []).forEach((id) => {
+    positions[id] = { x: 0, y: 0 };
+  });
+
+  // Outer rings
+  for (let layer = 1; layer <= maxLayer; layer++) {
+    const group = layerGroups[layer] || [];
+    const radius = layer * RING_DISTANCE;
+    const count = group.length;
+    // Spread evenly around the circle with slight offset per layer
+    const offsetAngle = layer * 0.3;
+    group.forEach((id, i) => {
+      const angle = offsetAngle + (2 * Math.PI * i) / count;
+      positions[id] = {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+      };
+    });
+  }
 
   return nodes.map((n) => {
-    const pos = g.node(n.id);
     const w = (n.style?.width as number) || 200;
     const h = (n.style?.height as number) || 70;
+    const pos = positions[n.id] || { x: 0, y: 0 };
     return { ...n, position: { x: pos.x - w / 2, y: pos.y - h / 2 } };
   });
 }
