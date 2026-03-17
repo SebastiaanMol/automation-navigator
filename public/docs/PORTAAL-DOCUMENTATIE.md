@@ -87,8 +87,12 @@ Overzichtstabel met:
 - **Zoeken** op naam/ID
 - **Filteren** op categorie, systeem, status
 - **Uitklapbare details** per automatisering met Mermaid diagram, stappen, koppelingen
+- **Bewerken** – Elke automatisering heeft een "Bewerken" knop in het detailpaneel, die navigeert naar `/bewerk/AUTO-XXX` met het volledig ingevulde formulier
 - **CSV Export** van alle data
 - **Deep linking** – kan geopend worden met `?open=AUTO-001` om direct een specifieke automatisering te tonen
+
+### 3.5 Bewerk Automatisering (`/bewerk/:id`)
+Hergebruikt het formulier van "Nieuwe Automatisering" in bewerkingsmodus. Alle velden worden vooringevuld met de huidige waarden. Na opslaan wordt de gebruiker teruggestuurd naar de detailweergave.
 
 ### 3.5 BPMN Viewer (`/bpmn`)
 Twee weergavemodi:
