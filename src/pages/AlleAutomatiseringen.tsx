@@ -111,6 +111,7 @@ export default function AlleAutomatiseringen() {
                 <span className="font-mono text-xs text-muted-foreground shrink-0">{a.id}</span>
                 <span className="font-medium truncate">{a.naam}</span>
                 <CategorieBadge categorie={a.categorie} />
+                <SystemBadge systeem={a.systemen[0] || "Anders"} />
                 <StatusBadge status={a.status} />
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -134,6 +135,7 @@ export default function AlleAutomatiseringen() {
                       </button>
                     </div>
                     <div className="grid md:grid-cols-2 gap-4">
+                      <Detail label="Bronsysteem" value={a.categorie} />
                       <Detail label="Doel" value={a.doel} />
                       <Detail label="Trigger" value={a.trigger} />
                       <Detail label="Owner" value={a.owner} />
