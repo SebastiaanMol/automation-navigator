@@ -258,7 +258,7 @@ function buildGraph(
       source: e.sourceId,
       target: e.targetId,
       label: isExplicit ? e.label : undefined,
-      type: "smoothstep",
+      type: "default",
       animated: isExplicit,
       style: {
         stroke: color,
