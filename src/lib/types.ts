@@ -32,6 +32,17 @@ export interface Automatisering {
   koppelingen: Koppeling[];
   fasen: KlantFase[];
   createdAt: string;
+  laatstGeverifieerd: string | null;
+  geverifieerdDoor: string;
+}
+
+export type VerificatieStatus = "geverifieerd" | "verouderd" | "nooit";
+
+export function getVerificatieStatus(a: Automatisering): VerificatieStatus {
+  if (!a.laatstGeverifieerd) return "nooit";
+  const diff = Date.now() - new Date(a.laatstGeverifieerd).getTime();
+  const days90 = 90 * 24 * 60 * 60 * 1000;
+  return diff <= days90 ? "geverifieerd" : "verouderd";
 }
 
 export const CATEGORIEEN: Categorie[] = [

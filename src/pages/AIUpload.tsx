@@ -450,6 +450,8 @@ export default function AIUpload() {
         koppelingen: [],
         fasen: [],
         createdAt: new Date().toISOString(),
+        laatstGeverifieerd: null,
+        geverifieerdDoor: "",
       };
 
       await insertAutomatisering(full);

@@ -54,6 +54,8 @@ export async function fetchAutomatiseringen(): Promise<Automatisering[]> {
     koppelingen: kopMap[r.id] || [],
     fasen: (r.fasen || []) as KlantFase[],
     createdAt: r.created_at,
+    laatstGeverifieerd: r.laatst_geverifieerd,
+    geverifieerdDoor: r.geverifieerd_door,
   }));
 }
 
@@ -136,6 +138,17 @@ export async function deleteAutomatisering(id: string): Promise<void> {
     .from("automatiseringen")
     .delete()
     .eq("id", id);
+  if (error) throw error;
+}
+
+// --- Verify automatisering ---
+export async function verifieerAutomatisering(id: string, door: string, status?: string): Promise<void> {
+  const update: Record<string, any> = {
+    laatst_geverifieerd: new Date().toISOString(),
+    geverifieerd_door: door,
+  };
+  if (status) update.status = status;
+  const { error } = await supabase.from("automatiseringen").update(update).eq("id", id);
   if (error) throw error;
 }
 

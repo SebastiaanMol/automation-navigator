@@ -30,6 +30,8 @@ const SEED_DATA: Automatisering[] = [
     ],
     fasen: ["Sales"],
     createdAt: new Date().toISOString(),
+    laatstGeverifieerd: null,
+    geverifieerdDoor: "",
   },
   {
     id: "AUTO-002",
@@ -58,6 +60,8 @@ const SEED_DATA: Automatisering[] = [
     ],
     fasen: ["Marketing", "Sales"],
     createdAt: new Date().toISOString(),
+    laatstGeverifieerd: null,
+    geverifieerdDoor: "",
   },
   {
     id: "AUTO-003",
@@ -86,6 +90,8 @@ const SEED_DATA: Automatisering[] = [
     koppelingen: [],
     fasen: ["Boekhouding"],
     createdAt: new Date().toISOString(),
+    laatstGeverifieerd: null,
+    geverifieerdDoor: "",
   },
 ];
 

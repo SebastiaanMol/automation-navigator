@@ -4,6 +4,7 @@ import { useAutomatiseringen, useDeleteAutomatisering } from "@/lib/hooks";
 import { exportToCSV } from "@/lib/supabaseStorage";
 import { CATEGORIEEN, SYSTEMEN, STATUSSEN, Systeem } from "@/lib/types";
 import { StatusBadge, CategorieBadge, SystemBadge } from "@/components/Badges";
+import { VerificatieBadge } from "@/components/VerificatieBadge";
 import { MermaidDiagram } from "@/components/MermaidDiagram";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -116,6 +117,7 @@ export default function AlleAutomatiseringen() {
                 <CategorieBadge categorie={a.categorie} />
                 <SystemBadge systeem={a.systemen[0] || "Anders"} />
                 <StatusBadge status={a.status} />
+                <VerificatieBadge item={a} />
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </button>

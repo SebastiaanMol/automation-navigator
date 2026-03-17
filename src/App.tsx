@@ -10,6 +10,7 @@ import NieuweAutomatiseringPage from "./pages/NieuweAutomatiseringPage";
 import AlleAutomatiseringen from "./pages/AlleAutomatiseringen";
 import BPMNViewer from "./pages/BPMNViewer";
 import Analyse from "./pages/Analyse";
+import Verificatie from "./pages/Verificatie";
 import Mindmap from "./pages/Mindmap";
 import BewerkAutomatisering from "./pages/BewerkAutomatisering";
 import AuthPage from "./pages/AuthPage";
@@ -39,6 +40,7 @@ function ProtectedRoutes() {
         <Route path="/bewerk/:id" element={<BewerkAutomatisering />} />
         <Route path="/bpmn" element={<BPMNViewer />} />
         <Route path="/mindmap" element={<Mindmap />} />
+        <Route path="/verificatie" element={<Verificatie />} />
         <Route path="/analyse" element={<Analyse />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
