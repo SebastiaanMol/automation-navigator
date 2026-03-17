@@ -441,16 +441,17 @@ export default function AIUpload() {
     }
   };
 
-  const saveAll = () => {
-    let count = 0;
-    csvResults.forEach((_, idx) => {
-      if (!savedIds.has(idx)) {
-        saveOne(idx);
-        count++;
-      }
-    });
-    if (count === 0) toast.info("Alle items zijn al opgeslagen");
-    else toast.success(`${count} automatisering(en) opgeslagen`);
+  const saveAll = async () => {
+    const toSave = csvResults.map((_, idx) => idx).filter((idx) => !savedIds.has(idx));
+    if (toSave.length === 0) {
+      toast.info("Alle items zijn al opgeslagen");
+      return;
+    }
+    toast.info(`${toSave.length} items opslaan...`);
+    for (const idx of toSave) {
+      await saveOne(idx);
+    }
+    toast.success(`Klaar! ${toSave.length} automatisering(en) opgeslagen`);
   };
 
   return (
