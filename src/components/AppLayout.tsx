@@ -7,6 +7,7 @@ import {
   BarChart3,
   Menu,
   X,
+  Map,
 } from "lucide-react";
 import { useState } from "react";
 
