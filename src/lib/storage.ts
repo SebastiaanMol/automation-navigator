@@ -1,4 +1,4 @@
-import { Automatisering } from "./types";
+import { Automatisering, Koppeling } from "./types";
 
 const STORAGE_KEY = "automatiseringen";
 

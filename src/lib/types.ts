@@ -9,6 +9,11 @@ export type Systeem = "HubSpot" | "Zapier" | "Backend" | "E-mail" | "API";
 
 export type Status = "Actief" | "Verouderd" | "In review" | "Uitgeschakeld";
 
+export interface Koppeling {
+  doelId: string;
+  label: string;
+}
+
 export interface Automatisering {
   id: string;
   naam: string;
@@ -22,6 +27,7 @@ export interface Automatisering {
   status: Status;
   verbeterideeën: string;
   mermaidDiagram: string;
+  koppelingen: Koppeling[];
   createdAt: string;
 }
 
