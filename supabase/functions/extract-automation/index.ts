@@ -119,11 +119,11 @@ Extraheer de automatisering en geef gestructureerde informatie terug. Gebruik AL
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          {
-            role: "system",
-            content:
-              "Je bent een AI-assistent die procesautomatiseringen analyseert voor een Nederlands boekhoudkantoor genaamd Brand Boekhouders. Je extraheert gestructureerde data uit CSV-exports en tekstbeschrijvingen. Antwoord altijd in het Nederlands. Wees specifiek en gedetailleerd in je beschrijvingen.",
-          },
+           {
+             role: "system",
+             content:
+               "Je bent een AI-assistent die procesautomatiseringen analyseert voor een Nederlands boekhoudkantoor genaamd Brand Boekhouders. Je extraheert gestructureerde data uit CSV-exports (HubSpot, Zapier, etc.) en tekstbeschrijvingen. Je herkent Zapier Zaps aan trigger/action apps en stappen. Antwoord altijd in het Nederlands. Wees specifiek en gedetailleerd in je beschrijvingen.",
+           },
           { role: "user", content: prompt },
         ],
         tools,
