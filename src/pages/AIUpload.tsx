@@ -278,51 +278,62 @@ export default function AIUpload() {
       };
       
       const rows: Record<string, string>[] = parsed.map((item: any) => flattenObj(item));
-      // Use same AI flow as CSV
-      const localResults = rows.map(mapRow);
-      try {
-        toast.info("AI analyseert je Zapier JSON data...");
-        const { data: result, error } = await supabase.functions.invoke("extract-automation", {
-          body: { type: "csv_rows", data: rows },
-        });
-        if (error) throw error;
-        const aiAutomations = result?.automations;
-        if (aiAutomations && aiAutomations.length > 0) {
-          const aiResults: ParsedAutomation[] = aiAutomations.map((auto: any, idx: number) => ({
-            raw: rows[idx] || rows[0],
-            mapped: {
-              naam: auto.naam,
-              categorie: auto.categorie as Categorie,
-              doel: auto.doel,
-              trigger: auto.trigger,
-              systemen: auto.systemen as Systeem[],
-              stappen: auto.stappen,
-              afhankelijkheden: auto.afhankelijkheden || "",
-              owner: auto.owner || "",
-              status: auto.status as Status,
-              verbeterideeën: auto.verbeterideeën || "",
-              mermaidDiagram: generateMermaid(auto.naam, auto.stappen || []),
-            },
-            beschrijving: auto.beschrijving || generateBeschrijving({
-              naam: auto.naam,
-              categorie: auto.categorie,
-              trigger: auto.trigger,
-              doel: auto.doel,
-              systemen: auto.systemen,
-              stappen: auto.stappen,
-              status: auto.status,
-            }),
-          }));
-          setCsvResults(aiResults);
-          setSavedIds(new Set());
-          setLoading(false);
-          toast.success(`AI heeft ${aiResults.length} automatisering(en) geanalyseerd`);
-          return;
+      // Send in batches of max 10 to avoid compute limits
+      const BATCH_SIZE = 10;
+      const allAiResults: ParsedAutomation[] = [];
+      
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        try {
+          toast.info(`AI analyseert batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(rows.length / BATCH_SIZE)}...`);
+          const { data: result, error } = await supabase.functions.invoke("extract-automation", {
+            body: { type: "csv_rows", data: batch },
+          });
+          if (error) throw error;
+          const aiAutomations = result?.automations;
+          if (aiAutomations && aiAutomations.length > 0) {
+            aiAutomations.forEach((auto: any, idx: number) => {
+              allAiResults.push({
+                raw: rows[i + idx] || rows[0],
+                mapped: {
+                  naam: auto.naam,
+                  categorie: auto.categorie as Categorie,
+                  doel: auto.doel,
+                  trigger: auto.trigger,
+                  systemen: auto.systemen as Systeem[],
+                  stappen: auto.stappen,
+                  afhankelijkheden: auto.afhankelijkheden || "",
+                  owner: auto.owner || "",
+                  status: auto.status as Status,
+                  verbeterideeën: auto.verbeterideeën || "",
+                  mermaidDiagram: generateMermaid(auto.naam, auto.stappen || []),
+                },
+                beschrijving: auto.beschrijving || generateBeschrijving({
+                  naam: auto.naam,
+                  categorie: auto.categorie,
+                  trigger: auto.trigger,
+                  doel: auto.doel,
+                  systemen: auto.systemen,
+                  stappen: auto.stappen,
+                  status: auto.status,
+                }),
+              });
+            });
+          }
+        } catch (e: any) {
+          console.error(`AI JSON batch ${i} error:`, e);
         }
-      } catch (e: any) {
-        console.error("AI JSON extraction error:", e);
-        toast.warning("AI-analyse niet beschikbaar, lokale extractie gebruikt.");
       }
+      
+      if (allAiResults.length > 0) {
+        setCsvResults(allAiResults);
+        setSavedIds(new Set());
+        setLoading(false);
+        toast.success(`AI heeft ${allAiResults.length} automatisering(en) geanalyseerd`);
+        return;
+      }
+      
+      toast.warning("AI-analyse niet beschikbaar, lokale extractie gebruikt.");
       setCsvResults(localResults);
       setSavedIds(new Set());
       setLoading(false);
