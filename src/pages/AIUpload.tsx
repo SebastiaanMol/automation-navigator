@@ -412,9 +412,22 @@ export default function AIUpload() {
     toast.success(`${localResults.length} automatisering(en) gevonden in CSV (lokaal)`);
   };
 
-  const saveOne = async (idx: number) => {
+  type SaveOutcome = "saved" | "duplicate" | "error";
+
+  const isDuplicateError = (err: any) => {
+    const msg = String(err?.message || "").toLowerCase();
+    return (
+      err?.code === "23505" ||
+      msg.includes("duplicate key") ||
+      msg.includes("bestaat al") ||
+      msg.includes("naam_normalized")
+    );
+  };
+
+  const saveOne = async (idx: number, options?: { silent?: boolean }): Promise<SaveOutcome> => {
     const item = csvResults[idx];
-    if (!item) return;
+    if (!item) return "error";
+
     try {
       const id = await generateNextId();
       const full: Automatisering = {
@@ -434,25 +447,62 @@ export default function AIUpload() {
         fasen: [],
         createdAt: new Date().toISOString(),
       };
+
       await insertAutomatisering(full);
       setSavedIds((prev) => new Set(prev).add(idx));
-      toast.success(`"${full.naam}" opgeslagen als ${full.id}`);
+      setSkippedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(idx);
+        return next;
+      });
+
+      if (!options?.silent) {
+        toast.success(`"${full.naam}" opgeslagen als ${full.id}`);
+      }
+
+      return "saved";
     } catch (err: any) {
-      toast.error(err.message || "Opslaan mislukt");
+      if (isDuplicateError(err)) {
+        setSkippedIds((prev) => new Set(prev).add(idx));
+        if (!options?.silent) {
+          toast.info(`"${item.mapped.naam}" bestaat al en is overgeslagen`);
+        }
+        return "duplicate";
+      }
+
+      if (!options?.silent) {
+        toast.error(err.message || "Opslaan mislukt");
+      }
+      return "error";
     }
   };
 
   const saveAll = async () => {
-    const toSave = csvResults.map((_, idx) => idx).filter((idx) => !savedIds.has(idx));
+    const toSave = csvResults
+      .map((_, idx) => idx)
+      .filter((idx) => !savedIds.has(idx) && !skippedIds.has(idx));
+
     if (toSave.length === 0) {
-      toast.info("Alle items zijn al opgeslagen");
+      toast.info("Geen nieuwe items om op te slaan");
       return;
     }
-    toast.info(`${toSave.length} items opslaan...`);
+
+    let savedCount = 0;
+    let duplicateCount = 0;
+    let errorCount = 0;
+
+    toast.info(`${toSave.length} items verwerken...`);
+
     for (const idx of toSave) {
-      await saveOne(idx);
+      const outcome = await saveOne(idx, { silent: true });
+      if (outcome === "saved") savedCount += 1;
+      if (outcome === "duplicate") duplicateCount += 1;
+      if (outcome === "error") errorCount += 1;
     }
-    toast.success(`Klaar! ${toSave.length} automatisering(en) opgeslagen`);
+
+    if (savedCount > 0) toast.success(`${savedCount} automatisering(en) opgeslagen`);
+    if (duplicateCount > 0) toast.info(`${duplicateCount} duplicaat/duplicaten overgeslagen`);
+    if (errorCount > 0) toast.error(`${errorCount} item(s) konden niet worden opgeslagen`);
   };
 
   return (
