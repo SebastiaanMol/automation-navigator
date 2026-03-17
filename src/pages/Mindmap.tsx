@@ -68,10 +68,25 @@ const STATUS_ICON: Record<string, string> = {
 const SYSTEM_HUB_PREFIX = "sys-hub-";
 
 function getPrimarySystem(auto: Automatisering): string {
-  if (auto.systemen.includes("HubSpot")) return "HubSpot";
-  if (auto.systemen.includes("Zapier")) return "Zapier";
-  if (auto.systemen.includes("Backend")) return "Backend";
-  return auto.systemen[0] || "API";
+  // Determine origin system based on categorie
+  switch (auto.categorie) {
+    case "HubSpot Workflow": return "HubSpot";
+    case "Zapier Zap": return "Zapier";
+    case "HubSpot + Zapier": return "HubSpot";
+    case "Backend Script": return "Backend";
+    default: return auto.systemen[0] || "Anders";
+  }
+}
+
+/** Get origin systems — used for hub connections (only the source platform) */
+function getOriginSystems(auto: Automatisering): string[] {
+  switch (auto.categorie) {
+    case "HubSpot Workflow": return ["HubSpot"];
+    case "Zapier Zap": return ["Zapier"];
+    case "HubSpot + Zapier": return ["HubSpot", "Zapier"];
+    case "Backend Script": return ["Backend"];
+    default: return [auto.systemen[0] || "Anders"];
+  }
 }
 
 // --- Radial layout with system hubs in center ring ---
@@ -250,19 +265,19 @@ function buildGraph(
   highlightSystem: string | null,
   showOnlyManual: boolean
 ): { nodes: Node[]; edges: Edge[]; systemHubIds: string[] } {
-  // Collect active systems
+  // Collect active origin systems only (not all used systems)
   const activeSystemsRaw = new Set<string>();
-  automatiseringen.forEach((a) => a.systemen.forEach((s) => activeSystemsRaw.add(s)));
-  
+  automatiseringen.forEach((a) => getOriginSystems(a).forEach((s) => activeSystemsRaw.add(s)));
+
   let activeSystems = [...activeSystemsRaw];
   if (filters.systems.size > 0) {
     activeSystems = activeSystems.filter((s) => filters.systems.has(s));
   }
 
-  // Filter automations
+  // Filter automations by origin system
   let filtered = automatiseringen;
   if (filters.systems.size > 0) {
-    filtered = filtered.filter((a) => a.systemen.some((s) => filters.systems.has(s)));
+    filtered = filtered.filter((a) => getOriginSystems(a).some((s) => filters.systems.has(s)));
   }
   const filteredIds = new Set(filtered.map((a) => a.id));
 
@@ -271,7 +286,7 @@ function buildGraph(
   const systemHubNodes: Node[] = activeSystems.map((sys) => {
     const hubId = `${SYSTEM_HUB_PREFIX}${sys}`;
     systemHubIds.push(hubId);
-    const count = filtered.filter((a) => a.systemen.includes(sys as Systeem)).length;
+    const count = filtered.filter((a) => getOriginSystems(a).includes(sys)).length;
     const color = SYSTEM_COLORS[sys] || "#64748b";
     return {
       id: hubId,
@@ -304,7 +319,7 @@ function buildGraph(
     const width = baseWidth + Math.min(conns * 15, 60);
     const isHighlighted = highlightId === a.id;
     const isSearchMatch = searchQuery && a.naam.toLowerCase().includes(searchQuery.toLowerCase());
-    const isDimmed = highlightSystem !== null && !a.systemen.includes(highlightSystem as Systeem);
+    const isDimmed = highlightSystem !== null && !getOriginSystems(a).includes(highlightSystem);
 
     return {
       id: a.id,
@@ -347,10 +362,10 @@ function buildGraph(
     };
   });
 
-  // Edges: automation→system hub (thin, no label)
+  // Edges: automation→origin system hub only (thin, no label)
   const systemEdges: Edge[] = [];
   filtered.forEach((a) => {
-    a.systemen.forEach((sys) => {
+    getOriginSystems(a).forEach((sys) => {
       const hubId = `${SYSTEM_HUB_PREFIX}${sys}`;
       if (systemHubIds.includes(hubId)) {
         systemEdges.push({
