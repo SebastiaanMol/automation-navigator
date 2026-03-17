@@ -32,7 +32,7 @@ export default function Verificatie() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [notitie, setNotitie] = useState("");
   const [showNotitie, setShowNotitie] = useState<"twijfel" | "verouderd" | null>(null);
@@ -49,18 +49,36 @@ export default function Verificatie() {
   const inReviewItems = all.filter((a) => a.status === "In review");
 
   const queue = sorted.filter((a) => !skipped.has(a.id));
-  const current = queue[currentIndex] || null;
-  const allDone = queue.length === 0 || currentIndex >= queue.length;
+
+  // Determine current item: if browsing history, show that item; otherwise show first in queue
+  const currentIdx = currentId ? queue.findIndex((a) => a.id === currentId) : -1;
+  const effectiveIdx = currentIdx >= 0 ? currentIdx : 0;
+  const current = currentId
+    ? all.find((a) => a.id === currentId) || queue[0] || null
+    : queue[0] || null;
+  const allDone = queue.length === 0 && !currentId;
+
+  // Initialize currentId to first queue item
+  const firstQueueId = queue[0]?.id;
+  useEffect(() => {
+    if (!currentId && firstQueueId) {
+      setCurrentId(firstQueueId);
+    }
+  }, [firstQueueId, currentId]);
 
   const userName = user?.email?.split("@")[0] || "Onbekend";
 
   const goNext = useCallback(() => {
     setDirection(1);
     if (current) setHistory((h) => [...h, current.id]);
-    setCurrentIndex((i) => Math.min(i + 1, queue.length));
+    // Find next unprocessed item in queue after current
+    const idxInQueue = queue.findIndex((a) => a.id === current?.id);
+    const nextItems = idxInQueue >= 0 ? queue.slice(idxInQueue + 1) : queue;
+    const next = nextItems.find((a) => a.id !== current?.id);
+    setCurrentId(next?.id || null);
     setShowNotitie(null);
     setNotitie("");
-  }, [queue.length, current]);
+  }, [queue, current]);
 
   const goPrev = useCallback(() => {
     if (history.length === 0) return;
