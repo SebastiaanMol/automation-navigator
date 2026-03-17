@@ -424,9 +424,9 @@ export default function AIUpload() {
       {/* Tab switcher */}
       <div className="flex gap-1 bg-secondary p-1 rounded-lg w-fit">
         <button
-          onClick={() => setTab("csv")}
+          onClick={() => setTab("bestand")}
           className={`px-4 py-2 text-sm rounded-md transition-colors ${
-            tab === "csv" ? "bg-card text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+            tab === "bestand" ? "bg-card text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <FileSpreadsheet className="h-4 w-4 inline mr-2" />
