@@ -208,9 +208,38 @@ export default function Analyse() {
 
       {/* ═══════════════ IMPACT & COMPLEXITEIT SCORES ═══════════════ */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold tracking-tight">Impact & Complexiteit Scores</h2>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold tracking-tight">Impact & Complexiteit Scores</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Select value={impactFilter} onValueChange={setImpactFilter}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Impact" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alle">Alle impact</SelectItem>
+                  <SelectItem value="hoog">Hoog (≥70)</SelectItem>
+                  <SelectItem value="gemiddeld">Gemiddeld (40-69)</SelectItem>
+                  <SelectItem value="laag">Laag (&lt;40)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={complexFilter} onValueChange={setComplexFilter}>
+              <SelectTrigger className="h-8 w-[160px] text-xs">
+                <SelectValue placeholder="Complexiteit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="alle">Alle complexiteit</SelectItem>
+                <SelectItem value="hoog">Hoog (≥70)</SelectItem>
+                <SelectItem value="gemiddeld">Gemiddeld (40-69)</SelectItem>
+                <SelectItem value="laag">Laag (&lt;40)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="bg-card border border-border rounded-[var(--radius-outer)] overflow-hidden shadow-sm">
