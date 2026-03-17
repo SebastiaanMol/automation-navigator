@@ -8,7 +8,7 @@ import { MermaidDiagram } from "@/components/MermaidDiagram";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Download, Search as SearchIcon, Loader2 } from "lucide-react";
+import { ChevronDown, Download, Search as SearchIcon, Loader2, Pencil } from "lucide-react";
 
 export default function AlleAutomatiseringen() {
   const [searchParams] = useSearchParams();
