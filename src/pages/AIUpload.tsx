@@ -334,10 +334,11 @@ export default function AIUpload() {
       }
       
       toast.warning("AI-analyse niet beschikbaar, lokale extractie gebruikt.");
-      setCsvResults(localResults);
+      const fallbackResults = rows.map(mapRow);
+      setCsvResults(fallbackResults);
       setSavedIds(new Set());
       setLoading(false);
-      toast.success(`${localResults.length} automatisering(en) gevonden in JSON (lokaal)`);
+      toast.success(`${fallbackResults.length} automatisering(en) gevonden in JSON (lokaal)`);
     } catch (e) {
       console.error("JSON parse error:", e);
       toast.error("Ongeldig JSON-bestand. Controleer het formaat.");
