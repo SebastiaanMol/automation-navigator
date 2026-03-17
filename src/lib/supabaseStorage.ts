@@ -74,7 +74,7 @@ export async function insertAutomatisering(item: Automatisering): Promise<void> 
     mermaid_diagram: item.mermaidDiagram,
     fasen: item.fasen,
   });
-  if (error) throw error;
+  if (error) throw toFriendlyDbError(error);
 
   // Insert koppelingen
   if (item.koppelingen.length > 0) {
