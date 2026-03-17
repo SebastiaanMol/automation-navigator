@@ -75,7 +75,7 @@ function ChartCard({ title, data, colors }: { title: string; data: { name: strin
   );
 }
 
-function groupBy(arr: { [key: string]: unknown }[], key: string): { name: string; count: number }[] {
+function groupBy<T extends Record<string, unknown>>(arr: T[], key: keyof T): { name: string; count: number }[] {
   const counts: Record<string, number> = {};
   arr.forEach((item) => {
     const val = String(item[key] || "Onbekend");
