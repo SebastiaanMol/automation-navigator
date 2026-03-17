@@ -26,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 // --- System colors ---
 const SYSTEM_COLORS: Record<string, string> = {
   HubSpot: "#ff7a59",
-  Zapier: "#ff4a00",
+  Zapier: "#65A30D",
   Typeform: "#262627",
   SharePoint: "#038387",
   WeFact: "#2ecc71",
