@@ -599,11 +599,16 @@ export default function AIUpload() {
           {csvResults.map((result, idx) => {
             const isExpanded = expandedIdx === idx;
             const isSaved = savedIds.has(idx);
+            const isSkipped = skippedIds.has(idx);
             return (
               <div
                 key={idx}
                 className={`bg-card border rounded-[var(--radius-outer)] overflow-hidden transition-colors ${
-                  isSaved ? "border-primary/30 bg-primary/5" : "border-border"
+                  isSaved
+                    ? "border-primary/30 bg-primary/5"
+                    : isSkipped
+                      ? "border-border bg-secondary/40"
+                      : "border-border"
                 }`}
               >
                 <button
