@@ -87,10 +87,12 @@ function getPrimarySystem(auto: Automatisering): string {
 // --- Dagre layout ---
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR", nodesep: 80, ranksep: 160, edgesep: 40 });
+  g.setGraph({ rankdir: "TB", nodesep: 120, ranksep: 200, edgesep: 60, marginx: 40, marginy: 40 });
 
   nodes.forEach((n) => {
-    g.setNode(n.id, { width: n.style?.width as number || 200, height: n.style?.height as number || 70 });
+    const w = (n.style?.width as number) || 200;
+    const h = (n.style?.height as number) || 70;
+    g.setNode(n.id, { width: w + 40, height: h + 30 });
   });
   edges.forEach((e) => {
     g.setEdge(e.source, e.target);
@@ -100,7 +102,9 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
 
   return nodes.map((n) => {
     const pos = g.node(n.id);
-    return { ...n, position: { x: pos.x - ((n.style?.width as number || 200) / 2), y: pos.y - ((n.style?.height as number || 70) / 2) } };
+    const w = (n.style?.width as number) || 200;
+    const h = (n.style?.height as number) || 70;
+    return { ...n, position: { x: pos.x - w / 2, y: pos.y - h / 2 } };
   });
 }
 
