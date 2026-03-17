@@ -111,6 +111,7 @@ export default function AlleAutomatiseringen() {
                 <span className="font-mono text-xs text-muted-foreground shrink-0">{a.id}</span>
                 <span className="font-medium truncate">{a.naam}</span>
                 <CategorieBadge categorie={a.categorie} />
+                <SystemBadge systeem={a.systemen[0] || "Anders"} />
                 <StatusBadge status={a.status} />
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
