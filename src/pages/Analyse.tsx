@@ -10,11 +10,12 @@ import {
 } from "@/lib/types";
 import { computeSmartEdges } from "@/lib/smartEdges";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell,
 } from "recharts";
-import { AlertTriangle, Activity, Layers, TrendingUp, ChevronDown, ChevronUp, Loader2, Filter } from "lucide-react";
+import { AlertTriangle, Activity, Layers, TrendingUp, ChevronDown, ChevronUp, Loader2, Filter, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 const FASE_COLORS: Record<KlantFase, string> = {
   Marketing: "#8b5cf6",
@@ -212,6 +213,29 @@ export default function Analyse() {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold tracking-tight">Impact & Complexiteit Scores</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs text-sm">
+                  <p className="font-semibold mb-1">Complexiteit (0-100)</p>
+                  <ul className="list-disc pl-4 mb-2 space-y-0.5">
+                    <li>Stappen × 10 (max 40)</li>
+                    <li>Systemen × 12 (max 36)</li>
+                    <li>Afhankelijkheden: +15</li>
+                    <li>Koppelingen × 5 (max 15)</li>
+                  </ul>
+                  <p className="font-semibold mb-1">Impact (0-100)</p>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Klantfasen × 12</li>
+                    <li>Systemen × 8</li>
+                    <li>Directe afhankelijkheden × 20</li>
+                    <li>Status Actief: +10</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -436,7 +460,7 @@ function ChartCard({ title, data, colors }: { title: string; data: { name: strin
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(214 32% 91%)" />
           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-          <Tooltip />
+          <RechartsTooltip />
           <Bar dataKey="count" radius={[4, 4, 0, 0]}>
             {data.map((_, i) => (
               <Cell key={i} fill={colors[i % colors.length]} />
