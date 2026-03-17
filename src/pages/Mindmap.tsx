@@ -87,7 +87,7 @@ function getPrimarySystem(auto: Automatisering): string {
 // --- Dagre layout ---
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", nodesep: 120, ranksep: 200, edgesep: 60, marginx: 40, marginy: 40 });
+  g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 250, edgesep: 30, marginx: 60, marginy: 60 });
 
   nodes.forEach((n) => {
     const w = (n.style?.width as number) || 200;
@@ -179,8 +179,8 @@ function buildGraph(
           ? `0 0 0 3px ${color}, 0 0 20px ${color}60`
           : `0 1px 4px rgba(0,0,0,0.05)`,
       },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
     };
   });
 
