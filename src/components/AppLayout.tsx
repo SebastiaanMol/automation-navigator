@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Map,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 
