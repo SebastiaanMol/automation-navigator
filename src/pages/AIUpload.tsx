@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import NieuweAutomatisering from "./NieuweAutomatisering";
 import { Automatisering, Categorie, Systeem, Status } from "@/lib/types";
-import { saveAutomatisering, generateId } from "@/lib/storage";
+import { insertAutomatisering, generateNextId } from "@/lib/supabaseStorage";
 import { Upload, FileText, Loader2, FileSpreadsheet, ChevronDown, Check, Sparkles } from "lucide-react";
 import { StatusBadge, CategorieBadge, SystemBadge } from "@/components/Badges";
 import { supabase } from "@/integrations/supabase/client";
