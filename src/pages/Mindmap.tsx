@@ -14,7 +14,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { getAutomatiseringen } from "@/lib/storage";
+import { useAutomatiseringen } from "@/lib/hooks";
 import { Automatisering, Systeem, SYSTEMEN } from "@/lib/types";
 import { StatusBadge, CategorieBadge, SystemBadge } from "@/components/Badges";
 import { MermaidDiagram } from "@/components/MermaidDiagram";
