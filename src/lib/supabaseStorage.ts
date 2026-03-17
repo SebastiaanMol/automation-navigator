@@ -105,7 +105,7 @@ export async function updateAutomatisering(item: Automatisering): Promise<void> 
     mermaid_diagram: item.mermaidDiagram,
     fasen: item.fasen,
   }).eq("id", item.id);
-  if (error) throw error;
+  if (error) throw toFriendlyDbError(error);
 
   // Delete existing koppelingen and re-insert
   const { error: delError } = await supabase.from("koppelingen").delete().eq("bron_id", item.id);
