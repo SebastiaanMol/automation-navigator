@@ -265,19 +265,19 @@ function buildGraph(
   highlightSystem: string | null,
   showOnlyManual: boolean
 ): { nodes: Node[]; edges: Edge[]; systemHubIds: string[] } {
-  // Collect active systems
+  // Collect active origin systems only (not all used systems)
   const activeSystemsRaw = new Set<string>();
-  automatiseringen.forEach((a) => a.systemen.forEach((s) => activeSystemsRaw.add(s)));
-  
+  automatiseringen.forEach((a) => getOriginSystems(a).forEach((s) => activeSystemsRaw.add(s)));
+
   let activeSystems = [...activeSystemsRaw];
   if (filters.systems.size > 0) {
     activeSystems = activeSystems.filter((s) => filters.systems.has(s));
   }
 
-  // Filter automations
+  // Filter automations by origin system
   let filtered = automatiseringen;
   if (filters.systems.size > 0) {
-    filtered = filtered.filter((a) => a.systemen.some((s) => filters.systems.has(s)));
+    filtered = filtered.filter((a) => getOriginSystems(a).some((s) => filters.systems.has(s)));
   }
   const filteredIds = new Set(filtered.map((a) => a.id));
 
