@@ -156,6 +156,7 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
         </div>
       </Field>
 
+      <Field label="Flow / Stappen">
         <div className="space-y-2">
           {(form.stappen || []).map((stap, i) => (
             <div key={i} className="flex gap-2 items-center">
