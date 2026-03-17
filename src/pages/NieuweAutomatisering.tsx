@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Automatisering, CATEGORIEEN, SYSTEMEN, STATUSSEN, KLANT_FASEN, Systeem, Categorie, Status, KlantFase, Koppeling } from "@/lib/types";
-import { useAutomatiseringen, useSaveAutomatisering, useNextId } from "@/lib/hooks";
+import { useAutomatiseringen, useSaveAutomatisering, useUpdateAutomatisering, useNextId } from "@/lib/hooks";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -12,13 +12,16 @@ import { X, Loader2 } from "lucide-react";
 
 interface NieuweAutomatiseringProps {
   prefill?: Partial<Automatisering>;
+  editMode?: boolean;
+  editId?: string;
 }
 
-export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringProps) {
+export default function NieuweAutomatisering({ prefill, editMode, editId }: NieuweAutomatiseringProps) {
   const navigate = useNavigate();
   const { data: allAutomatiseringen = [] } = useAutomatiseringen();
   const { data: nextId, isLoading: idLoading } = useNextId();
   const saveMutation = useSaveAutomatisering();
+  const updateMutation = useUpdateAutomatisering();
 
   const [form, setForm] = useState<Partial<Automatisering>>({
     naam: "",
@@ -74,12 +77,15 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
       toast.error("Naam is verplicht");
       return;
     }
-    if (!nextId) {
+
+    const id = editMode ? editId! : nextId;
+    if (!id) {
       toast.error("Kan geen ID genereren");
       return;
     }
+
     const item: Automatisering = {
-      id: nextId,
+      id,
       naam: form.naam!,
       categorie: form.categorie as Categorie,
       doel: form.doel || "",
@@ -93,20 +99,27 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
       mermaidDiagram: form.mermaidDiagram || "",
       koppelingen: (form.koppelingen || []).filter((k) => k.doelId),
       fasen: (form.fasen || []) as KlantFase[],
-      createdAt: new Date().toISOString(),
+      createdAt: prefill?.createdAt || new Date().toISOString(),
     };
 
     try {
-      await saveMutation.mutateAsync(item);
-      toast.success(`${item.id} opgeslagen`);
-      navigate("/alle");
+      if (editMode) {
+        await updateMutation.mutateAsync(item);
+        toast.success(`${item.id} bijgewerkt`);
+      } else {
+        await saveMutation.mutateAsync(item);
+        toast.success(`${item.id} opgeslagen`);
+      }
+      navigate(`/alle?open=${item.id}`);
     } catch (err: any) {
       toast.error(err.message || "Opslaan mislukt");
     }
   };
 
+  const isPending = saveMutation.isPending || updateMutation.isPending;
+
   const availableForKoppeling = allAutomatiseringen.filter(
-    (a) => !(form.koppelingen || []).some((k) => k.doelId === a.id)
+    (a) => a.id !== editId && !(form.koppelingen || []).some((k) => k.doelId === a.id)
   );
 
   return (
@@ -114,7 +127,7 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
       <div>
         <p className="label-uppercase mb-1">ID</p>
         <p className="font-mono text-sm text-foreground">
-          {idLoading ? <Loader2 className="h-4 w-4 animate-spin inline" /> : nextId}
+          {editMode ? editId : idLoading ? <Loader2 className="h-4 w-4 animate-spin inline" /> : nextId}
         </p>
       </div>
 
@@ -259,10 +272,10 @@ export default function NieuweAutomatisering({ prefill }: NieuweAutomatiseringPr
 
       <button
         onClick={submit}
-        disabled={saveMutation.isPending}
+        disabled={isPending}
         className="bg-primary text-primary-foreground px-6 py-2.5 rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
       >
-        {saveMutation.isPending ? "Opslaan..." : "Opslaan"}
+        {isPending ? "Opslaan..." : editMode ? "Wijzigingen opslaan" : "Opslaan"}
       </button>
     </div>
   );
