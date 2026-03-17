@@ -366,42 +366,70 @@ export default function Verificatie() {
           </AnimatePresence>
         </TabsContent>
 
+        <TabsContent value="geverifieerd" className="mt-4 space-y-3">
+          {geverifieerdItems.length === 0 ? (
+            <EmptyState emoji="🔍" title="Nog niets geverifieerd" description="Er zijn nog geen recent geverifieerde automatiseringen." />
+          ) : (
+            geverifieerdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
+          )}
+        </TabsContent>
+
+        <TabsContent value="verouderd" className="mt-4 space-y-3">
+          {verouderdItems.length === 0 ? (
+            <EmptyState emoji="✅" title="Niets verouderd" description="Alle geverifieerde automatiseringen zijn nog actueel." />
+          ) : (
+            verouderdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
+          )}
+        </TabsContent>
+
         <TabsContent value="in-review" className="mt-4 space-y-3">
           {inReviewItems.length === 0 ? (
-            <div className="bg-card border border-border rounded-[var(--radius-outer)] p-12 text-center space-y-2">
-              <p className="text-3xl">👍</p>
-              <h2 className="text-lg font-semibold">Geen openstaande twijfels</h2>
-              <p className="text-sm text-muted-foreground">Er zijn geen automatiseringen met de status "In review".</p>
-            </div>
+            <EmptyState emoji="👍" title="Geen openstaande twijfels" description='Er zijn geen automatiseringen met de status "In review".' />
           ) : (
-            inReviewItems.map((a) => (
-              <div key={a.id} className="bg-card border border-border rounded-[var(--radius-outer)] shadow-sm p-4 flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono text-xs text-muted-foreground">{a.id}</span>
-                    <span className="font-medium truncate">{a.naam}</span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <CategorieBadge categorie={a.categorie} />
-                    {a.systemen.map((s) => <SystemBadge key={s} systeem={s} />)}
-                    <span className="text-xs text-muted-foreground">
-                      Owner: {a.owner || "—"} · Geverifieerd door: {a.geverifieerdDoor || "—"}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button size="sm" variant="outline" onClick={() => navigate(`/bewerk/${a.id}`)}>
-                    <Pencil className="h-3.5 w-3.5 mr-1" /> Bewerken
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => navigate(`/alle?open=${a.id}`)}>
-                    <ChevronRight className="h-3.5 w-3.5 mr-1" /> Bekijken
-                  </Button>
-                </div>
-              </div>
-            ))
+            inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
           )}
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function AutoListItem({ item: a, navigate }: { item: Automatisering; navigate: (path: string) => void }) {
+  return (
+    <div className="bg-card border border-border rounded-[var(--radius-outer)] shadow-sm p-4 flex items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono text-xs text-muted-foreground">{a.id}</span>
+          <span className="font-medium truncate">{a.naam}</span>
+          <VerificatieBadge item={a} />
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <CategorieBadge categorie={a.categorie} />
+          {a.systemen.map((s) => <SystemBadge key={s} systeem={s} />)}
+          <span className="text-xs text-muted-foreground">
+            Owner: {a.owner || "—"}
+            {a.laatstGeverifieerd && ` · ${new Date(a.laatstGeverifieerd).toLocaleDateString("nl-NL")} door ${a.geverifieerdDoor}`}
+          </span>
+        </div>
+      </div>
+      <div className="flex gap-2 shrink-0">
+        <Button size="sm" variant="outline" onClick={() => navigate(`/bewerk/${a.id}`)}>
+          <Pencil className="h-3.5 w-3.5 mr-1" /> Bewerken
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => navigate(`/alle?open=${a.id}`)}>
+          <ChevronRight className="h-3.5 w-3.5 mr-1" /> Bekijken
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ emoji, title, description }: { emoji: string; title: string; description: string }) {
+  return (
+    <div className="bg-card border border-border rounded-[var(--radius-outer)] p-12 text-center space-y-2">
+      <p className="text-3xl">{emoji}</p>
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
