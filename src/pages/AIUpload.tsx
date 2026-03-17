@@ -430,7 +430,7 @@ export default function AIUpload() {
           }`}
         >
           <FileSpreadsheet className="h-4 w-4 inline mr-2" />
-          CSV Upload (HubSpot / Zapier)
+          Bestand Upload (CSV / JSON)
         </button>
         <button
           onClick={() => setTab("tekst")}
