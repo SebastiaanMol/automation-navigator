@@ -571,9 +571,9 @@ export default function AIUpload() {
                       </div>
                     )}
 
-                    {/* Raw CSV data */}
+                    {/* Raw data */}
                     <div>
-                      <p className="label-uppercase mb-1">Ruwe CSV-data</p>
+                      <p className="label-uppercase mb-1">Ruwe data</p>
                       <div className="bg-muted rounded-[var(--radius-inner)] p-3 overflow-x-auto">
                         <table className="text-xs font-mono w-full">
                           <tbody>
