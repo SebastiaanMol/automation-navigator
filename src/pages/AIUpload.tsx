@@ -366,7 +366,7 @@ export default function AIUpload() {
       {tab === "csv" && !csvResults.length && (
         <div className="max-w-2xl space-y-4">
           <p className="text-sm text-muted-foreground">
-            Upload een CSV-export van je HubSpot workflows of automatiseringen. Het portaal herkent automatisch de kolommen en vult alle velden in.
+            Upload een CSV-export van je HubSpot workflows of Zapier Zaps. Het portaal herkent automatisch de kolommen en vult alle velden in met AI.
           </p>
           <div
             onClick={() => fileInputRef.current?.click()}
