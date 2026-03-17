@@ -130,7 +130,7 @@ function mapRow(row: Record<string, string>): ParsedAutomation {
     if (triggerApp) stappen.push(`Trigger: ${triggerApp}`);
     if (actionApp) stappen.push(`Action: ${actionApp}`);
   }
-  const stappen = stappen_raw ? stappen_raw.split(/[;\|→]/).map((s) => s.trim()).filter(Boolean) : [];
+  
   const afhankelijkheden = findField(row, ["afhankelijk", "dependencies", "knelpunt", "blocker"]);
   const verbeterideeën = findField(row, ["verbetering", "improvement", "idee", "todo", "opmerking", "notes"]);
 
