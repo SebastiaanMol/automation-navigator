@@ -13,7 +13,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from "recharts";
-import { AlertTriangle, Activity, Layers, TrendingUp, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { AlertTriangle, Activity, Layers, TrendingUp, ChevronDown, ChevronUp, Loader2, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const FASE_COLORS: Record<KlantFase, string> = {
   Marketing: "#8b5cf6",
@@ -80,6 +81,8 @@ export default function Analyse() {
   const data = fetchedData || [];
   const smartEdges = useMemo(() => computeSmartEdges(data), [data]);
   const [expandedFailure, setExpandedFailure] = useState<string | null>(null);
+  const [impactFilter, setImpactFilter] = useState<string>("alle");
+  const [complexFilter, setComplexFilter] = useState<string>("alle");
 
   const categorieData = useMemo(() => groupBy(data, "categorie"), [data]);
   const statusData = useMemo(() => groupBy(data, "status"), [data]);
@@ -205,9 +208,38 @@ export default function Analyse() {
 
       {/* ═══════════════ IMPACT & COMPLEXITEIT SCORES ═══════════════ */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold tracking-tight">Impact & Complexiteit Scores</h2>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold tracking-tight">Impact & Complexiteit Scores</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Select value={impactFilter} onValueChange={setImpactFilter}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Impact" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alle">Alle impact</SelectItem>
+                  <SelectItem value="hoog">Hoog (≥70)</SelectItem>
+                  <SelectItem value="gemiddeld">Gemiddeld (40-69)</SelectItem>
+                  <SelectItem value="laag">Laag (&lt;40)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={complexFilter} onValueChange={setComplexFilter}>
+              <SelectTrigger className="h-8 w-[160px] text-xs">
+                <SelectValue placeholder="Complexiteit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="alle">Alle complexiteit</SelectItem>
+                <SelectItem value="hoog">Hoog (≥70)</SelectItem>
+                <SelectItem value="gemiddeld">Gemiddeld (40-69)</SelectItem>
+                <SelectItem value="laag">Laag (&lt;40)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="bg-card border border-border rounded-[var(--radius-outer)] overflow-hidden shadow-sm">
@@ -220,7 +252,17 @@ export default function Analyse() {
             <span className="text-center">Status</span>
           </div>
 
-          {scoredData.map((a) => (
+          {scoredData.filter((a) => {
+            const matchImpact = impactFilter === "alle" ||
+              (impactFilter === "hoog" && a.impact >= 70) ||
+              (impactFilter === "gemiddeld" && a.impact >= 40 && a.impact < 70) ||
+              (impactFilter === "laag" && a.impact < 40);
+            const matchComplex = complexFilter === "alle" ||
+              (complexFilter === "hoog" && a.complexiteit >= 70) ||
+              (complexFilter === "gemiddeld" && a.complexiteit >= 40 && a.complexiteit < 70) ||
+              (complexFilter === "laag" && a.complexiteit < 40);
+            return matchImpact && matchComplex;
+          }).map((a) => (
             <div
               key={a.id}
               className="grid grid-cols-[auto_1fr_100px_100px_100px_80px] gap-0 px-4 py-3 border-b border-border last:border-0 items-center hover:bg-secondary/50 transition-colors"
