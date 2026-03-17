@@ -252,7 +252,17 @@ export default function Analyse() {
             <span className="text-center">Status</span>
           </div>
 
-          {scoredData.map((a) => (
+          {scoredData.filter((a) => {
+            const matchImpact = impactFilter === "alle" ||
+              (impactFilter === "hoog" && a.impact >= 70) ||
+              (impactFilter === "gemiddeld" && a.impact >= 40 && a.impact < 70) ||
+              (impactFilter === "laag" && a.impact < 40);
+            const matchComplex = complexFilter === "alle" ||
+              (complexFilter === "hoog" && a.complexiteit >= 70) ||
+              (complexFilter === "gemiddeld" && a.complexiteit >= 40 && a.complexiteit < 70) ||
+              (complexFilter === "laag" && a.complexiteit < 40);
+            return matchImpact && matchComplex;
+          }).map((a) => (
             <div
               key={a.id}
               className="grid grid-cols-[auto_1fr_100px_100px_100px_80px] gap-0 px-4 py-3 border-b border-border last:border-0 items-center hover:bg-secondary/50 transition-colors"
