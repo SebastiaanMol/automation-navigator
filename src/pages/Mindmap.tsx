@@ -362,10 +362,10 @@ function buildGraph(
     };
   });
 
-  // Edges: automation→system hub (thin, no label)
+  // Edges: automation→origin system hub only (thin, no label)
   const systemEdges: Edge[] = [];
   filtered.forEach((a) => {
-    a.systemen.forEach((sys) => {
+    getOriginSystems(a).forEach((sys) => {
       const hubId = `${SYSTEM_HUB_PREFIX}${sys}`;
       if (systemHubIds.includes(hubId)) {
         systemEdges.push({
