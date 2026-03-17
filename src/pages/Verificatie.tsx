@@ -47,6 +47,8 @@ export default function Verificatie() {
   const progress = totalCount > 0 ? (verifiedCount / totalCount) * 100 : 0;
 
   const inReviewItems = all.filter((a) => a.status === "In review");
+  const geverifieerdItems = all.filter((a) => getVerificatieStatus(a) === "geverifieerd");
+  const verouderdItems = all.filter((a) => getVerificatieStatus(a) === "verouderd");
 
   const queue = sorted.filter((a) => !skipped.has(a.id));
 
