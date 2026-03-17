@@ -391,7 +391,7 @@ export default function AIUpload() {
           <div className="bg-secondary border border-border rounded-[var(--radius-inner)] p-4 mt-4">
             <p className="label-uppercase mb-2">Verwachte kolommen</p>
             <p className="text-sm text-muted-foreground">
-              Het systeem herkent kolommen zoals: <span className="font-mono text-xs">Naam, Name, Workflow, Beschrijving, Description, Trigger, Owner, Status, Stappen, Steps, Actions</span> enz. Kolommen die niet herkend worden, worden overgeslagen.
+              Het systeem herkent kolommen zoals: <span className="font-mono text-xs">Naam, Name, Workflow, Zap Name, Trigger App, Action App, Beschrijving, Description, Trigger, Owner, Status, Stappen, Steps, Actions, Folder</span> enz.
             </p>
           </div>
         </div>
