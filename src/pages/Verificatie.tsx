@@ -397,6 +397,10 @@ export default function Verificatie() {
             inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
           )}
         </TabsContent>
+
+        <TabsContent value="alle" className="mt-4 space-y-3">
+          {sorted.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)}
+        </TabsContent>
       </Tabs>
     </div>
   );
