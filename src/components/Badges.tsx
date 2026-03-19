@@ -5,6 +5,12 @@ export function SystemBadge({ systeem }: { systeem: Systeem | string }) {
     HubSpot: "badge-hubspot",
     Zapier: "badge-zapier",
     Backend: "badge-backend",
+    Typeform: "badge-typeform",
+    SharePoint: "badge-sharepoint",
+    WeFact: "badge-wefact",
+    Docufy: "badge-docufy",
+    "E-mail": "badge-email",
+    API: "badge-api",
   };
   return <span className={map[systeem] || "badge-backend"}>{systeem}</span>;
 }
