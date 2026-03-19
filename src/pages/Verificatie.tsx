@@ -70,6 +70,15 @@ export default function Verificatie() {
 
   const userName = user?.email?.split("@")[0] || "Onbekend";
 
+  const handleListVerify = useCallback(async (id: string) => {
+    try {
+      await verifieer.mutateAsync({ id, door: userName });
+      toast.success(`${id} geverifieerd ✅`);
+    } catch (e: any) {
+      toast.error(e.message || "Fout bij verificatie");
+    }
+  }, [verifieer, userName]);
+
   const goNext = useCallback(() => {
     setDirection(1);
     if (current) setHistory((h) => [...h, current.id]);
@@ -378,7 +387,7 @@ export default function Verificatie() {
           {geverifieerdItems.length === 0 ? (
             <EmptyState emoji="🔍" title="Nog niets geverifieerd" description="Er zijn nog geen recent geverifieerde automatiseringen." />
           ) : (
-            geverifieerdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
+            geverifieerdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)
           )}
         </TabsContent>
 
@@ -386,7 +395,7 @@ export default function Verificatie() {
           {verouderdItems.length === 0 ? (
             <EmptyState emoji="✅" title="Niets verouderd" description="Alle geverifieerde automatiseringen zijn nog actueel." />
           ) : (
-            verouderdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
+            verouderdItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)
           )}
         </TabsContent>
 
@@ -394,19 +403,19 @@ export default function Verificatie() {
           {inReviewItems.length === 0 ? (
             <EmptyState emoji="👍" title="Geen openstaande twijfels" description='Er zijn geen automatiseringen met de status "In review".' />
           ) : (
-            inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)
+            inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)
           )}
         </TabsContent>
 
         <TabsContent value="alle" className="mt-4 space-y-3">
-          {sorted.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} />)}
+          {sorted.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)}
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function AutoListItem({ item: a, navigate }: { item: Automatisering; navigate: (path: string) => void }) {
+function AutoListItem({ item: a, navigate, onVerify }: { item: Automatisering; navigate: (path: string) => void; onVerify?: (id: string) => void }) {
   return (
     <div className="bg-card border border-border rounded-[var(--radius-outer)] shadow-sm p-4 flex items-center gap-4">
       <div className="flex-1 min-w-0">
@@ -425,6 +434,11 @@ function AutoListItem({ item: a, navigate }: { item: Automatisering; navigate: (
         </div>
       </div>
       <div className="flex gap-2 shrink-0">
+        {onVerify && (
+          <Button size="sm" className="bg-[hsl(var(--status-active))] hover:bg-[hsl(var(--status-active)/0.85)] text-white" onClick={() => onVerify(a.id)}>
+            <Check className="h-3.5 w-3.5 mr-1" /> Verifiëren
+          </Button>
+        )}
         <Button size="sm" variant="outline" onClick={() => navigate(`/bewerk/${a.id}`)}>
           <Pencil className="h-3.5 w-3.5 mr-1" /> Bewerken
         </Button>
