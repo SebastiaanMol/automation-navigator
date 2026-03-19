@@ -70,6 +70,15 @@ export default function Verificatie() {
 
   const userName = user?.email?.split("@")[0] || "Onbekend";
 
+  const handleListVerify = useCallback(async (id: string) => {
+    try {
+      await verifieer.mutateAsync({ id, door: userName });
+      toast.success(`${id} geverifieerd ✅`);
+    } catch (e: any) {
+      toast.error(e.message || "Fout bij verificatie");
+    }
+  }, [verifieer, userName]);
+
   const goNext = useCallback(() => {
     setDirection(1);
     if (current) setHistory((h) => [...h, current.id]);
