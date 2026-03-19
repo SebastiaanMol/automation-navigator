@@ -406,7 +406,7 @@ export default function Verificatie() {
         </TabsContent>
 
         <TabsContent value="alle" className="mt-4 space-y-3">
-          {sorted.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)}
+          {sorted.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onGoToVerify={handleGoToVerify} />)}
         </TabsContent>
       </Tabs>
     </div>
