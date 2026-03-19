@@ -3,6 +3,12 @@ export type Categorie =
   | "Zapier Zap"
   | "Backend Script"
   | "HubSpot + Zapier"
+  | "Typeform"
+  | "SharePoint"
+  | "WeFact"
+  | "Docufy"
+  | "E-mail"
+  | "API"
   | "Anders";
 
 export type Systeem = "HubSpot" | "Zapier" | "Typeform" | "SharePoint" | "WeFact" | "Docufy" | "Backend" | "E-mail" | "API" | "Anders";
@@ -50,6 +56,12 @@ export const CATEGORIEEN: Categorie[] = [
   "Zapier Zap",
   "Backend Script",
   "HubSpot + Zapier",
+  "Typeform",
+  "SharePoint",
+  "WeFact",
+  "Docufy",
+  "E-mail",
+  "API",
   "Anders",
 ];
 

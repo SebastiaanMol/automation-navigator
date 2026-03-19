@@ -30,6 +30,12 @@
     --hubspot: 12 100% 67%;
     --zapier: 84 89% 37%;
     --backend: 210 100% 40%;
+    --typeform: 0 0% 15%;
+    --sharepoint: 178 97% 26%;
+    --wefact: 38 91% 55%;
+    --docufy: 263 57% 50%;
+    --email: 160 84% 39%;
+    --api: 215 25% 46%;
     --status-active: 160 84% 39%;
     --status-disabled: 215 16% 47%;
     --status-review: 38 92% 50%;
@@ -73,6 +79,36 @@
     @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
     background: hsl(var(--backend) / 0.1);
     color: hsl(var(--backend));
+  }
+  .badge-typeform {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--typeform) / 0.1);
+    color: hsl(var(--typeform));
+  }
+  .badge-sharepoint {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--sharepoint) / 0.1);
+    color: hsl(var(--sharepoint));
+  }
+  .badge-wefact {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--wefact) / 0.1);
+    color: hsl(var(--wefact));
+  }
+  .badge-docufy {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--docufy) / 0.1);
+    color: hsl(var(--docufy));
+  }
+  .badge-email {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--email) / 0.1);
+    color: hsl(var(--email));
+  }
+  .badge-api {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--api) / 0.1);
+    color: hsl(var(--api));
   }
   .badge-status-actief {
     @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
