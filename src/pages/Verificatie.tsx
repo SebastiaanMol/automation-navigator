@@ -401,7 +401,7 @@ export default function Verificatie() {
           {inReviewItems.length === 0 ? (
             <EmptyState emoji="👍" title="Geen openstaande twijfels" description='Er zijn geen automatiseringen met de status "In review".' />
           ) : (
-            inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onVerify={handleListVerify} />)
+            inReviewItems.map((a) => <AutoListItem key={a.id} item={a} navigate={navigate} onGoToVerify={handleGoToVerify} />)
           )}
         </TabsContent>
 
