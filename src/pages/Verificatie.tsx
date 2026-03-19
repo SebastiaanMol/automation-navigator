@@ -406,7 +406,7 @@ export default function Verificatie() {
   );
 }
 
-function AutoListItem({ item: a, navigate }: { item: Automatisering; navigate: (path: string) => void }) {
+function AutoListItem({ item: a, navigate, onVerify }: { item: Automatisering; navigate: (path: string) => void; onVerify?: (id: string) => void }) {
   return (
     <div className="bg-card border border-border rounded-[var(--radius-outer)] shadow-sm p-4 flex items-center gap-4">
       <div className="flex-1 min-w-0">
@@ -425,6 +425,11 @@ function AutoListItem({ item: a, navigate }: { item: Automatisering; navigate: (
         </div>
       </div>
       <div className="flex gap-2 shrink-0">
+        {onVerify && (
+          <Button size="sm" className="bg-[hsl(var(--status-active))] hover:bg-[hsl(var(--status-active)/0.85)] text-white" onClick={() => onVerify(a.id)}>
+            <Check className="h-3.5 w-3.5 mr-1" /> Verifiëren
+          </Button>
+        )}
         <Button size="sm" variant="outline" onClick={() => navigate(`/bewerk/${a.id}`)}>
           <Pencil className="h-3.5 w-3.5 mr-1" /> Bewerken
         </Button>
