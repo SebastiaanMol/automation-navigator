@@ -16,12 +16,19 @@ export function SystemBadge({ systeem }: { systeem: Systeem | string }) {
 }
 
 export function CategorieBadge({ categorie }: { categorie: Categorie }) {
-  if (categorie.includes("HubSpot") && categorie.includes("Zapier"))
-    return <span className="badge-hubspot">HubSpot + Zapier</span>;
-  if (categorie.includes("HubSpot")) return <span className="badge-hubspot">{categorie}</span>;
-  if (categorie.includes("Zapier")) return <span className="badge-zapier">{categorie}</span>;
-  if (categorie.includes("Backend")) return <span className="badge-backend">{categorie}</span>;
-  return <span className="badge-backend">{categorie}</span>;
+  const map: Record<string, string> = {
+    "HubSpot Workflow": "badge-hubspot",
+    "Zapier Zap": "badge-zapier",
+    "HubSpot + Zapier": "badge-hubspot",
+    "Backend Script": "badge-backend",
+    Typeform: "badge-typeform",
+    SharePoint: "badge-sharepoint",
+    WeFact: "badge-wefact",
+    Docufy: "badge-docufy",
+    "E-mail": "badge-email",
+    API: "badge-api",
+  };
+  return <span className={map[categorie] || "badge-backend"}>{categorie}</span>;
 }
 
 export function StatusBadge({ status }: { status: Status }) {

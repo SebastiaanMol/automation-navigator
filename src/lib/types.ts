@@ -56,6 +56,12 @@ export const CATEGORIEEN: Categorie[] = [
   "Zapier Zap",
   "Backend Script",
   "HubSpot + Zapier",
+  "Typeform",
+  "SharePoint",
+  "WeFact",
+  "Docufy",
+  "E-mail",
+  "API",
   "Anders",
 ];
 

@@ -80,6 +80,36 @@
     background: hsl(var(--backend) / 0.1);
     color: hsl(var(--backend));
   }
+  .badge-typeform {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--typeform) / 0.1);
+    color: hsl(var(--typeform));
+  }
+  .badge-sharepoint {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--sharepoint) / 0.1);
+    color: hsl(var(--sharepoint));
+  }
+  .badge-wefact {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--wefact) / 0.1);
+    color: hsl(var(--wefact));
+  }
+  .badge-docufy {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--docufy) / 0.1);
+    color: hsl(var(--docufy));
+  }
+  .badge-email {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--email) / 0.1);
+    color: hsl(var(--email));
+  }
+  .badge-api {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
+    background: hsl(var(--api) / 0.1);
+    color: hsl(var(--api));
+  }
   .badge-status-actief {
     @apply rounded-full px-2 py-0.5 text-[10px] font-bold uppercase;
     background: hsl(var(--status-active) / 0.1);
