@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { StatusBadge, CategorieBadge } from "@/components/Badges";
 import { useAutomatiseringen } from "@/lib/hooks";
-import { getVerificatieStatus } from "@/lib/types";
+import { Automatisering, getVerificatieStatus } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, ClipboardCheck } from "lucide-react";
 
 export default function Dashboard() {
