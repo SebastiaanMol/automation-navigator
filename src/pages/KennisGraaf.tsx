@@ -459,7 +459,7 @@ function KennisGraafInner() {
               : 1,
         },
         labelStyle: { fill: "#94a3b8", fontSize: 10 },
-        labelBgStyle: { fill: "#0f172a", fillOpacity: 0.8 },
+        labelBgStyle: { fill: "#ffffff", fillOpacity: 0.8 },
       }))
 
     // System edges
@@ -564,7 +564,7 @@ function KennisGraafInner() {
         maxZoom={3}
         style={{ background: "#f8fafc", width: "100%", height: "100%" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#1e293b" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#e2e8f0" />
         <Controls style={{ bottom: 16, left: 16 }} />
         <MiniMap
           style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}
@@ -579,7 +579,7 @@ function KennisGraafInner() {
         {/* ── top bar ── */}
         <Panel position="top-center">
           <div style={{
-            background: "#0f172aee",
+            background: "#ffffffee",
             border: "1px solid #1e293b",
             borderRadius: 10,
             padding: "8px 16px",
@@ -598,7 +598,7 @@ function KennisGraafInner() {
         {/* ── layout + analysis toolbar ── */}
         <Panel position="top-right">
           <div style={{
-            background: "#0f172a",
+            background: "#ffffff",
             border: "1px solid #1e293b",
             borderRadius: 10,
             padding: 12,
@@ -623,9 +623,9 @@ function KennisGraafInner() {
                       borderRadius: 6,
                       fontSize: 11,
                       fontWeight: 600,
-                      border: `1px solid ${layoutMode === l.id ? "#6366f1" : "#1e293b"}`,
+                      border: `1px solid ${layoutMode === l.id ? "#6366f1" : "#e2e8f0"}`,
                       background: layoutMode === l.id ? "#6366f133" : "transparent",
-                      color: layoutMode === l.id ? "#a78bfa" : "#64748b",
+                      color: layoutMode === l.id ? "#6366f1" : "#64748b",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -654,7 +654,7 @@ function KennisGraafInner() {
                       borderRadius: 6,
                       fontSize: 11,
                       fontWeight: 600,
-                      border: `1px solid ${item.val ? "#0ea5e9" : "#1e293b"}`,
+                      border: `1px solid ${item.val ? "#0ea5e9" : "#e2e8f0"}`,
                       background: item.val ? "#0ea5e933" : "transparent",
                       color: item.val ? "#38bdf8" : "#64748b",
                       cursor: "pointer",
@@ -689,7 +689,7 @@ function KennisGraafInner() {
                       borderRadius: 6,
                       fontSize: 11,
                       fontWeight: 600,
-                      border: `1px solid ${analysisMode === a.id ? "#f43f5e" : "#1e293b"}`,
+                      border: `1px solid ${analysisMode === a.id ? "#f43f5e" : "#e2e8f0"}`,
                       background: analysisMode === a.id ? "#f43f5e22" : "transparent",
                       color: analysisMode === a.id ? "#fb7185" : "#64748b",
                       cursor: "pointer",
@@ -732,9 +732,9 @@ function KennisGraafInner() {
 
             {/* Stats */}
             {stats.topNode && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: 8 }}>
+              <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
                 <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Meest verbonden</div>
-                <div style={{ fontSize: 11, color: "#a78bfa" }}>{stats.topNode[0]}</div>
+                <div style={{ fontSize: 11, color: "#6366f1" }}>{stats.topNode[0]}</div>
                 <div style={{ fontSize: 10, color: "#64748b" }}>{(stats.topNode[1] * 100).toFixed(0)}% centraliteit</div>
               </div>
             )}
@@ -788,7 +788,7 @@ function KennisGraafInner() {
                         borderRadius: 5,
                         fontSize: 10,
                         fontWeight: 600,
-                        border: `1px solid ${filterStatus.includes(s) ? STATUS_COLORS[s] : "#1e293b"}`,
+                        border: `1px solid ${filterStatus.includes(s) ? STATUS_COLORS[s] : "#e2e8f0"}`,
                         background: filterStatus.includes(s) ? `${STATUS_COLORS[s]}22` : "transparent",
                         color: filterStatus.includes(s) ? STATUS_COLORS[s] : "#64748b",
                         cursor: "pointer",
@@ -813,7 +813,7 @@ function KennisGraafInner() {
                         borderRadius: 5,
                         fontSize: 10,
                         fontWeight: 600,
-                        border: `1px solid ${filterSystem.includes(s) ? c : "#1e293b"}`,
+                        border: `1px solid ${filterSystem.includes(s) ? c : "#e2e8f0"}`,
                         background: filterSystem.includes(s) ? `${c}22` : "transparent",
                         color: filterSystem.includes(s) ? c : "#64748b",
                         cursor: "pointer",
@@ -838,7 +838,7 @@ function KennisGraafInner() {
                         borderRadius: 5,
                         fontSize: 10,
                         fontWeight: 600,
-                        border: `1px solid ${filterFase.includes(f) ? c : "#1e293b"}`,
+                        border: `1px solid ${filterFase.includes(f) ? c : "#e2e8f0"}`,
                         background: filterFase.includes(f) ? `${c}22` : "transparent",
                         color: filterFase.includes(f) ? c : "#64748b",
                         cursor: "pointer",
@@ -907,8 +907,8 @@ function KennisGraafInner() {
             right: 0,
             width: 320,
             height: "100%",
-            background: "#0f172a",
-            borderLeft: "1px solid #1e293b",
+            background: "#ffffff",
+            borderLeft: "1px solid #e2e8f0",
             overflowY: "auto",
             zIndex: 10,
             padding: 20,
@@ -1029,7 +1029,7 @@ function KennisGraafInner() {
                       borderRadius: 6,
                       padding: "6px 10px",
                       fontSize: 11,
-                      color: "#a78bfa",
+                      color: "#6366f1",
                       cursor: "pointer",
                       textAlign: "left",
                       display: "flex",
@@ -1058,7 +1058,7 @@ function KennisGraafInner() {
           )}
 
           {/* Analyse actions */}
-          <div style={{ borderTop: "1px solid #1e293b", paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
             <button
               onClick={() => { setAnalysisMode("cascade"); }}
               style={{
