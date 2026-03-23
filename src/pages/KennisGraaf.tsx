@@ -34,6 +34,7 @@ import { useAutomatiseringen } from "@/lib/hooks"
 import { Automatisering, berekenComplexiteit, berekenImpact, KlantFase, Systeem } from "@/lib/types"
 import { buildEdgeList, cascadeImpact, degreeCentrality, findOrphans, shortestPath } from "@/lib/graphAnalysis"
 import { runForceLayout, seedNodes } from "@/lib/forceLayout"
+import { DOMAIN_NODES, DOMAIN_EDGES, DOMAIN_COLORS, CRITICAL_PATH_NODES, CRITICAL_PATH_EDGES, DomainNodeType } from "@/lib/domainGraph"
 
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -231,10 +232,68 @@ function PhaseNode({ data }: NodeProps) {
   )
 }
 
+// ─── custom node: Domain ──────────────────────────────────────────────────────
+
+function DomainNode({ data }: NodeProps) {
+  const d = data as {
+    domainType: DomainNodeType
+    label: string
+    sub?: string
+    badge?: string
+    dimmed?: boolean
+    critical?: boolean
+  }
+  const color = DOMAIN_COLORS[d.domainType]
+  const isCritical = d.domainType === "critical"
+  return (
+    <div style={{
+      opacity: d.dimmed ? 0.2 : 1,
+      border: `2px solid ${color}`,
+      borderLeft: `5px solid ${color}`,
+      borderRadius: 10,
+      background: isCritical ? "#fff7ed" : "#ffffff",
+      padding: "10px 14px",
+      minWidth: 220,
+      maxWidth: 280,
+      boxShadow: isCritical ? `0 0 0 3px ${color}44` : "0 1px 4px #0000000f",
+      transition: "opacity 0.2s",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 1.3 }}>
+          {isCritical && "⚠️ "}{d.label}
+        </div>
+        <span style={{
+          fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 20,
+          background: `${color}22`, color, border: `1px solid ${color}66`,
+          whiteSpace: "nowrap", flexShrink: 0,
+        }}>
+          {d.domainType.toUpperCase()}
+        </span>
+      </div>
+      {d.sub && (
+        <div style={{ fontSize: 10, color: "#64748b", marginTop: 4, whiteSpace: "pre-line", lineHeight: 1.5 }}>
+          {d.sub}
+        </div>
+      )}
+      {d.badge && (
+        <div style={{
+          marginTop: 6, fontSize: 10, fontWeight: 600,
+          color: "#6366f1", background: "#eef2ff",
+          border: "1px solid #c7d2fe", borderRadius: 5,
+          padding: "2px 7px", display: "inline-block",
+        }}>
+          {d.badge}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const nodeTypes = {
   automation: AutomationNode,
   system: SystemNode,
   phase: PhaseNode,
+  domainNode: DomainNode,
 }
 
 // ─── dagre layout ─────────────────────────────────────────────────────────────
@@ -286,6 +345,8 @@ function KennisGraafInner() {
   const [pathSource, setPathSource] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(true)
   const [showDetail, setShowDetail] = useState(false)
+  const [showDomainView, setShowDomainView] = useState(false)
+  const [showCriticalPath, setShowCriticalPath] = useState(false)
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -503,7 +564,30 @@ function KennisGraafInner() {
     setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 50)
   }, [filtered, filteredIds, edgeList, layoutMode, showSystems, showPhases, analysisMode, cascadeSet, pathSet, orphans, centrality, selectedId, automations, setNodes, setEdges, fitView])
 
-  useEffect(() => { buildGraph() }, [buildGraph])
+  useEffect(() => {
+    if (showDomainView) {
+      // Apply dagre layout to domain graph
+      const laid = applyDagre(DOMAIN_NODES, DOMAIN_EDGES, "TB")
+      const nodesWithDim = laid.map(n => ({
+        ...n,
+        data: {
+          ...n.data,
+          dimmed: showCriticalPath && !CRITICAL_PATH_NODES.has(n.id),
+        },
+      }))
+      const edgesWithDim = DOMAIN_EDGES.map(e => ({
+        ...e,
+        style: showCriticalPath && !CRITICAL_PATH_EDGES.has(e.id)
+          ? { ...e.style, opacity: 0.1 }
+          : e.style,
+      }))
+      setNodes(nodesWithDim)
+      setEdges(edgesWithDim)
+      setTimeout(() => fitView({ padding: 0.1, duration: 600 }), 50)
+    } else {
+      buildGraph()
+    }
+  }, [showDomainView, showCriticalPath, buildGraph, setNodes, setEdges, fitView])
 
   // ── selected automation detail ────────────────────────────────────────────
   const selectedAuto = useMemo(
@@ -580,18 +664,57 @@ function KennisGraafInner() {
         <Panel position="top-center">
           <div style={{
             background: "#ffffffee",
-            border: "1px solid #1e293b",
+            border: "1px solid #e2e8f0",
             borderRadius: 10,
             padding: "8px 16px",
             display: "flex",
-            gap: 8,
+            gap: 10,
             alignItems: "center",
+            boxShadow: "0 1px 4px #0000000f",
           }}>
             <Network size={16} color="#6366f1" />
             <span style={{ color: "#0f172a", fontWeight: 700, fontSize: 14 }}>Kennisgraaf</span>
-            <span style={{ color: "#475569", fontSize: 12 }}>
-              {stats.total} automations · {stats.connections} koppelingen
-            </span>
+
+            {/* View toggle */}
+            <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+              {[
+                { id: false, label: "Automations" },
+                { id: true,  label: "Domeinstructuur" },
+              ].map(v => (
+                <button key={String(v.id)}
+                  onClick={() => { setShowDomainView(v.id); setShowCriticalPath(false) }}
+                  style={{
+                    padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    border: `1px solid ${showDomainView === v.id ? "#6366f1" : "#e2e8f0"}`,
+                    background: showDomainView === v.id ? "#eef2ff" : "#f8fafc",
+                    color: showDomainView === v.id ? "#6366f1" : "#64748b",
+                    cursor: "pointer",
+                  }}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Critical path toggle — only in domain view */}
+            {showDomainView && (
+              <button
+                onClick={() => setShowCriticalPath(!showCriticalPath)}
+                style={{
+                  padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                  border: `1px solid ${showCriticalPath ? "#ef4444" : "#e2e8f0"}`,
+                  background: showCriticalPath ? "#fef2f2" : "#f8fafc",
+                  color: showCriticalPath ? "#ef4444" : "#64748b",
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                }}>
+                ⚠️ Kritiek pad
+              </button>
+            )}
+
+            {!showDomainView && (
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                {stats.total} automations · {stats.connections} koppelingen
+              </span>
+            )}
           </div>
         </Panel>
 
