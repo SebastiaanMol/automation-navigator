@@ -564,30 +564,31 @@ function KennisGraafInner() {
     setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 50)
   }, [filtered, filteredIds, edgeList, layoutMode, showSystems, showPhases, analysisMode, cascadeSet, pathSet, orphans, centrality, selectedId, automations, setNodes, setEdges, fitView])
 
+  // Automation view
   useEffect(() => {
-    if (showDomainView) {
-      // Apply dagre layout to domain graph
-      const laid = applyDagre(DOMAIN_NODES, DOMAIN_EDGES, "TB")
-      const nodesWithDim = laid.map(n => ({
-        ...n,
-        data: {
-          ...n.data,
-          dimmed: showCriticalPath && !CRITICAL_PATH_NODES.has(n.id),
-        },
-      }))
-      const edgesWithDim = DOMAIN_EDGES.map(e => ({
-        ...e,
-        style: showCriticalPath && !CRITICAL_PATH_EDGES.has(e.id)
-          ? { ...e.style, opacity: 0.1 }
-          : e.style,
-      }))
-      setNodes(nodesWithDim)
-      setEdges(edgesWithDim)
-      setTimeout(() => fitView({ padding: 0.1, duration: 600 }), 50)
-    } else {
-      buildGraph()
-    }
-  }, [showDomainView, showCriticalPath, buildGraph, setNodes, setEdges, fitView])
+    if (!showDomainView) buildGraph()
+  }, [showDomainView, buildGraph])
+
+  // Domain view
+  useEffect(() => {
+    if (!showDomainView) return
+    const nodesWithDim = DOMAIN_NODES.map(n => ({
+      ...n,
+      data: {
+        ...n.data,
+        dimmed: showCriticalPath && !CRITICAL_PATH_NODES.has(n.id),
+      },
+    }))
+    const edgesWithDim = DOMAIN_EDGES.map(e => ({
+      ...e,
+      style: showCriticalPath && !CRITICAL_PATH_EDGES.has(e.id)
+        ? { ...e.style, opacity: 0.1 }
+        : e.style,
+    }))
+    setNodes(nodesWithDim)
+    setEdges(edgesWithDim)
+    setTimeout(() => fitView({ padding: 0.08, duration: 600 }), 80)
+  }, [showDomainView, showCriticalPath, setNodes, setEdges, fitView])
 
   // ── selected automation detail ────────────────────────────────────────────
   const selectedAuto = useMemo(
