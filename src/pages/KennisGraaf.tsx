@@ -106,7 +106,7 @@ function AutomationNode({ data }: NodeProps) {
         opacity,
         boxShadow: ring,
         border: `2px solid ${borderColor}`,
-        background: d.isDimmed ? "#1a1a2e" : "#0f0f1a",
+        background: d.isDimmed ? "#f1f5f9" : "#ffffff",
         borderRadius: 10,
         width: NODE_W,
         minHeight: NODE_H,
@@ -128,7 +128,7 @@ function AutomationNode({ data }: NodeProps) {
           }}
         />
       </div>
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", lineHeight: 1.3, wordBreak: "break-word" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", lineHeight: 1.3, wordBreak: "break-word" }}>
         {d.label}
       </div>
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
@@ -158,7 +158,7 @@ function AutomationNode({ data }: NodeProps) {
         )}
       </div>
       {d.centralityScore > 0 && (
-        <div style={{ height: 2, background: "#1e293b", borderRadius: 2, marginTop: 2 }}>
+        <div style={{ height: 2, background: "#f1f5f9", borderRadius: 2, marginTop: 2 }}>
           <div
             style={{
               height: 2,
@@ -541,15 +541,15 @@ function KennisGraafInner() {
 
   if (isLoading) {
     return (
-      <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#080812", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
+      <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
         Kennisgraaf laden…
       </div>
     )
   }
 
   return (
-    <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#080812", position: "relative", overflow: "hidden" }}>
-      <style>{`.react-flow { background: #080812 !important; } .react-flow__renderer { background: #080812 !important; }`}</style>
+    <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#f8fafc", position: "relative", overflow: "hidden" }}>
+      <style>{`.react-flow { background: #f8fafc !important; } .react-flow__renderer { background: #f8fafc !important; }`}</style>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -557,23 +557,23 @@ function KennisGraafInner() {
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
-        colorMode="dark"
+        colorMode="light"
         fitView
         fitViewOptions={{ padding: 0.15 }}
         minZoom={0.05}
         maxZoom={3}
-        style={{ background: "#080812", width: "100%", height: "100%" }}
+        style={{ background: "#f8fafc", width: "100%", height: "100%" }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#1e293b" />
         <Controls style={{ bottom: 16, left: 16 }} />
         <MiniMap
-          style={{ background: "#0f172a", border: "1px solid #1e293b" }}
+          style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}
           nodeColor={n => {
             if (n.type === "system") return (n.data as { color: string }).color
             if (n.type === "phase") return (n.data as { color: string }).color
             return STATUS_COLORS[(n.data as { status: string }).status] ?? "#6366f1"
           }}
-          maskColor="#08081288"
+          maskColor="#f8fafc88"
         />
 
         {/* ── top bar ── */}
@@ -588,7 +588,7 @@ function KennisGraafInner() {
             alignItems: "center",
           }}>
             <Network size={16} color="#6366f1" />
-            <span style={{ color: "#e2e8f0", fontWeight: 700, fontSize: 14 }}>Kennisgraaf</span>
+            <span style={{ color: "#0f172a", fontWeight: 700, fontSize: 14 }}>Kennisgraaf</span>
             <span style={{ color: "#475569", fontSize: 12 }}>
               {stats.total} automations · {stats.connections} koppelingen
             </span>
@@ -704,7 +704,7 @@ function KennisGraafInner() {
               </div>
 
               {analysisMode === "cascade" && (
-                <div style={{ marginTop: 6, fontSize: 11, color: "#94a3b8" }}>
+                <div style={{ marginTop: 6, fontSize: 11, color: "#475569" }}>
                   {selectedId
                     ? `Cascade van ${selectedId} → ${(cascadeSet?.size ?? 1) - 1} geraakt`
                     : "Klik een node om cascade te zien"}
@@ -712,7 +712,7 @@ function KennisGraafInner() {
               )}
 
               {analysisMode === "path" && (
-                <div style={{ marginTop: 6, fontSize: 11, color: "#94a3b8" }}>
+                <div style={{ marginTop: 6, fontSize: 11, color: "#475569" }}>
                   {!pathSource
                     ? "Klik startnode"
                     : !pathTarget
@@ -745,8 +745,8 @@ function KennisGraafInner() {
         {showFilters && (
           <Panel position="top-left">
             <div style={{
-              background: "#0f172a",
-              border: "1px solid #1e293b",
+              background: "#ffffff",
+              border: "1px solid #e2e8f0",
               borderRadius: 10,
               padding: 12,
               width: 200,
@@ -763,8 +763,8 @@ function KennisGraafInner() {
                   placeholder="Zoeken..."
                   style={{
                     width: "100%",
-                    background: "#1e293b",
-                    border: "1px solid #334155",
+                    background: "#f1f5f9",
+                    border: "1px solid #e2e8f0",
                     borderRadius: 6,
                     padding: "5px 8px 5px 26px",
                     fontSize: 12,
@@ -859,9 +859,9 @@ function KennisGraafInner() {
                     borderRadius: 6,
                     fontSize: 11,
                     fontWeight: 600,
-                    border: "1px solid #334155",
+                    border: "1px solid #e2e8f0",
                     background: "transparent",
-                    color: "#94a3b8",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -880,8 +880,8 @@ function KennisGraafInner() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             style={{
-              background: "#0f172a",
-              border: "1px solid #1e293b",
+              background: "#ffffff",
+              border: "1px solid #e2e8f0",
               borderRadius: 8,
               padding: "6px 10px",
               color: "#64748b",
@@ -942,7 +942,7 @@ function KennisGraafInner() {
             </span>
             <span style={{
               padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
-              background: "#1e293b", color: "#94a3b8", border: "1px solid #334155",
+              background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0",
             }}>
               {selectedAuto.categorie}
             </span>
@@ -957,8 +957,8 @@ function KennisGraafInner() {
               { label: "Koppelingen", value: selectedAuto.koppelingen?.length ?? 0, color: "#22c55e", suffix: "" },
             ].map(m => (
               <div key={m.label} style={{
-                background: "#1e293b", borderRadius: 8, padding: "10px 12px",
-                border: "1px solid #334155",
+                background: "#f1f5f9", borderRadius: 8, padding: "10px 12px",
+                border: "1px solid #e2e8f0",
               }}>
                 <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700 }}>{m.label}</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: m.color, marginTop: 2 }}>
@@ -976,7 +976,7 @@ function KennisGraafInner() {
           ].filter(r => r.value).map(r => (
             <div key={r.label}>
               <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, marginBottom: 3, textTransform: "uppercase", letterSpacing: 1 }}>{r.label}</div>
-              <div style={{ fontSize: 12, color: "#cbd5e1" }}>{r.value}</div>
+              <div style={{ fontSize: 12, color: "#334155" }}>{r.value}</div>
             </div>
           ))}
 
@@ -1024,8 +1024,8 @@ function KennisGraafInner() {
                     key={k.doelId}
                     onClick={() => setSelectedId(k.doelId)}
                     style={{
-                      background: "#1e293b",
-                      border: "1px solid #334155",
+                      background: "#f1f5f9",
+                      border: "1px solid #e2e8f0",
                       borderRadius: 6,
                       padding: "6px 10px",
                       fontSize: 11,
@@ -1051,7 +1051,7 @@ function KennisGraafInner() {
               <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>Stappen</div>
               <ol style={{ margin: 0, padding: "0 0 0 16px" }}>
                 {selectedAuto.stappen.map((s, i) => (
-                  <li key={i} style={{ fontSize: 11, color: "#94a3b8", marginBottom: 3 }}>{s}</li>
+                  <li key={i} style={{ fontSize: 11, color: "#475569", marginBottom: 3 }}>{s}</li>
                 ))}
               </ol>
             </div>
@@ -1062,7 +1062,7 @@ function KennisGraafInner() {
             <button
               onClick={() => { setAnalysisMode("cascade"); }}
               style={{
-                background: "#1e293b", border: "1px solid #334155", borderRadius: 6,
+                background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6,
                 padding: "7px 12px", fontSize: 12, color: "#fb7185", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 6, fontWeight: 600,
               }}
@@ -1072,7 +1072,7 @@ function KennisGraafInner() {
             <button
               onClick={() => { setAnalysisMode("path"); setPathSource(selectedAuto.id); setPathTarget(null); }}
               style={{
-                background: "#1e293b", border: "1px solid #334155", borderRadius: 6,
+                background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6,
                 padding: "7px 12px", fontSize: 12, color: "#facc15", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 6, fontWeight: 600,
               }}
