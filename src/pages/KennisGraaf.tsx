@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 const KennisGraaf3D = lazy(() => import("./KennisGraaf3D"))
 import {
   ReactFlow,
@@ -20,14 +20,17 @@ import "@xyflow/react/dist/style.css"
 import * as dagre from "@dagrejs/dagre"
 import {
   AlertTriangle,
+  CheckCircle,
   ChevronRight,
   Filter,
   GitFork,
+  Layers,
   Network,
   Search,
   Share2,
   Shuffle,
   Sigma,
+  TriangleAlert,
   X,
   Zap,
 } from "lucide-react"
@@ -36,6 +39,9 @@ import { Automatisering, berekenComplexiteit, berekenImpact, KlantFase, Systeem 
 import { buildEdgeList, cascadeImpact, degreeCentrality, findOrphans, shortestPath } from "@/lib/graphAnalysis"
 import { runForceLayout, seedNodes } from "@/lib/forceLayout"
 import { DOMAIN_NODES, DOMAIN_EDGES, DOMAIN_COLORS, CRITICAL_PATH_NODES, CRITICAL_PATH_EDGES, DomainNodeType } from "@/lib/domainGraph"
+import { detectProblems, problemNodeIds, SEVERITY_COLORS, TYPE_LABELS, GraphProblem } from "@/lib/graphProblems"
+import { ClusterNode } from "@/components/graph/ClusterNode"
+import { ContextMenu, ContextMenuItem } from "@/components/graph/ContextMenu"
 
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -91,23 +97,26 @@ function AutomationNode({ data }: NodeProps) {
     isOrphan: boolean
     isPathNode: boolean
     impactScore: number
+    problemSeverity?: "error" | "warning" | "info"
   }
 
   const borderColor = STATUS_COLORS[d.status] ?? "#6366f1"
   const opacity = d.isDimmed ? 0.2 : 1
+  const probColor = d.problemSeverity ? SEVERITY_COLORS[d.problemSeverity] : null
   const ring = d.isPathNode
     ? "0 0 0 3px #facc15"
     : d.isHighlighted
     ? `0 0 0 3px ${borderColor}`
+    : probColor
+    ? `0 0 0 2px ${probColor}`
     : "none"
 
-  const sizeBoost = 0 // kept uniform; size variation via width prop
   return (
     <div
       style={{
         opacity,
         boxShadow: ring,
-        border: `2px solid ${borderColor}`,
+        border: `2px solid ${probColor ?? borderColor}`,
         background: d.isDimmed ? "#f1f5f9" : "#ffffff",
         borderRadius: 10,
         width: NODE_W,
@@ -156,6 +165,17 @@ function AutomationNode({ data }: NodeProps) {
         {d.isOrphan && (
           <span style={{ fontSize: 9, color: "#f97316", background: "#f9731622", border: "1px solid #f97316", borderRadius: 4, padding: "1px 5px" }}>
             orphan
+          </span>
+        )}
+        {d.problemSeverity && (
+          <span style={{
+            fontSize: 9, fontWeight: 700,
+            color: SEVERITY_COLORS[d.problemSeverity],
+            background: `${SEVERITY_COLORS[d.problemSeverity]}18`,
+            border: `1px solid ${SEVERITY_COLORS[d.problemSeverity]}`,
+            borderRadius: 4, padding: "1px 5px",
+          }}>
+            {d.problemSeverity === "error" ? "⛔" : d.problemSeverity === "warning" ? "⚠" : "ℹ"}
           </span>
         )}
       </div>
@@ -295,6 +315,7 @@ const nodeTypes = {
   system: SystemNode,
   phase: PhaseNode,
   domainNode: DomainNode,
+  cluster: ClusterNode,
 }
 
 // ─── dagre layout ─────────────────────────────────────────────────────────────
@@ -350,6 +371,15 @@ function KennisGraafInner() {
   const [showCriticalPath, setShowCriticalPath] = useState(false)
   const [show3D, setShow3D] = useState(false)
 
+  // ── new features ──────────────────────────────────────────────────────────
+  type ClusterBy = "none" | "categorie" | "systeem" | "fase"
+  const [clusterBy, setClusterBy] = useState<ClusterBy>("none")
+  const [expandedClusters, setExpandedClusters] = useState<Set<string>>(new Set())
+  const [hiddenEdgeTypes, setHiddenEdgeTypes] = useState<Set<string>>(new Set())
+  const [showProblemPanel, setShowProblemPanel] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null)
+  const [problemFilter, setProblemFilter] = useState<string>("all")
+
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const { fitView } = useReactFlow()
@@ -371,6 +401,10 @@ function KennisGraafInner() {
     }
     return null
   }, [analysisMode, pathSource, pathTarget, automations])
+
+  // ── problem detection ────────────────────────────────────────────────────────
+  const problems = useMemo(() => detectProblems(automations), [automations])
+  const problemMap = useMemo(() => problemNodeIds(problems), [problems])
 
   // ── filtered automations ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -443,6 +477,7 @@ function KennisGraafInner() {
         (analysisMode === "centrality" && c < 0.05) ||
         (analysisMode === "path" && pathSet && !pathSet.has(a.id)) ||
         false
+      const probSeverity = problemMap.get(a.id)
 
       return {
         id: a.id,
@@ -460,6 +495,7 @@ function KennisGraafInner() {
           isOrphan: analysisMode === "orphans" && orphans.has(a.id),
           isPathNode: analysisMode === "path" && pathSet ? pathSet.has(a.id) : false,
           impactScore: berekenImpact(a, automations),
+          problemSeverity: probSeverity,
         },
       }
     })
@@ -545,16 +581,120 @@ function KennisGraafInner() {
       }
     }
 
+    // ── Edge type filtering ─────────────────────────────────────────────────
+    const visibleEdges = rfEdges.filter(e => {
+      if (e.id.startsWith("sys_") && hiddenEdgeTypes.has("system")) return false
+      if (e.id.startsWith("phase_") && hiddenEdgeTypes.has("phase")) return false
+      if (e.id.startsWith("e_") && hiddenEdgeTypes.has("koppeling")) return false
+      return true
+    })
+
+    // ── Clustering ──────────────────────────────────────────────────────────
+    let finalNodes: Node[] = rfNodes
+    let finalEdges: Edge[] = visibleEdges
+
+    if (clusterBy !== "none") {
+      const clusterNodes: Node[] = []
+      const clusterEdges: Edge[] = []
+      const hiddenNodeIds = new Set<string>()
+
+      // Group automations by chosen attribute
+      const groups = new Map<string, Automatisering[]>()
+      for (const a of filtered) {
+        let key = "Overig"
+        if (clusterBy === "categorie") key = a.categorie || "Overig"
+        else if (clusterBy === "systeem") key = a.systemen?.[0] || "Overig"
+        else if (clusterBy === "fase") key = a.fasen?.[0] || "Overig"
+        if (!groups.has(key)) groups.set(key, [])
+        groups.get(key)!.push(a)
+      }
+
+      let cx = 0
+      for (const [groupKey, members] of groups) {
+        const clusterId = `cluster_${groupKey}`
+        const isExpanded = expandedClusters.has(clusterId)
+        const color = SYSTEM_COLORS[groupKey] ?? PHASE_COLORS[groupKey] ?? "#6366f1"
+        const worstSeverity = members.reduce<string | undefined>((worst, m) => {
+          const s = problemMap.get(m.id)
+          if (!s) return worst
+          if (!worst) return s
+          return s === "error" ? s : worst
+        }, undefined)
+
+        // Cluster node
+        clusterNodes.push({
+          id: clusterId,
+          type: "cluster",
+          position: { x: cx, y: 0 },
+          data: { label: groupKey, color, count: members.length, expanded: isExpanded, severity: worstSeverity },
+        })
+        cx += 280
+
+        if (!isExpanded) {
+          // Hide member nodes, replace inter-cluster edges with cluster edges
+          for (const m of members) hiddenNodeIds.add(m.id)
+        } else {
+          // Show member nodes offset from cluster
+          let mx = 0, my = 80
+          for (const m of members) {
+            const baseNode = finalNodes.find(n => n.id === m.id)
+            if (baseNode) {
+              clusterNodes.push({ ...baseNode, position: { x: (cx - 280) + mx, y: my }, zIndex: 1 })
+              clusterEdges.push({
+                id: `cluster_edge_${clusterId}_${m.id}`,
+                source: clusterId, target: m.id,
+                type: "straight",
+                style: { stroke: `${color}66`, strokeWidth: 1 },
+              })
+            }
+            mx += 220
+            if (mx > 660) { mx = 0; my += 120 }
+          }
+        }
+      }
+
+      // Add cross-cluster koppeling edges for collapsed clusters
+      for (const e of visibleEdges.filter(e => e.id.startsWith("e_"))) {
+        const s = typeof e.source === "string" ? e.source : (e.source as any).id
+        const t = typeof e.target === "string" ? e.target : (e.target as any).id
+        if (hiddenNodeIds.has(s) || hiddenNodeIds.has(t)) {
+          // Find cluster IDs
+          const sc = [...groups.entries()].find(([, ms]) => ms.some(m => m.id === s))?.[0]
+          const tc = [...groups.entries()].find(([, ms]) => ms.some(m => m.id === t))?.[0]
+          if (sc && tc && sc !== tc) {
+            const ceid = `ce_${sc}_${tc}`
+            if (!clusterEdges.find(ce => ce.id === ceid)) {
+              clusterEdges.push({
+                id: ceid, source: `cluster_${sc}`, target: `cluster_${tc}`,
+                type: "smoothstep", animated: true,
+                markerEnd: { type: MarkerType.ArrowClosed, color: "#6366f1" },
+                style: { stroke: "#6366f1", strokeWidth: 2 },
+              })
+            }
+          }
+        }
+      }
+
+      finalNodes = [...clusterNodes, ...finalNodes.filter(n => !hiddenNodeIds.has(n.id) && !n.id.startsWith("cluster_"))]
+      finalEdges = [...clusterEdges, ...visibleEdges.filter(e => {
+        const s = typeof e.source === "string" ? e.source : (e.source as any).id
+        const t = typeof e.target === "string" ? e.target : (e.target as any).id
+        return !hiddenNodeIds.has(s) && !hiddenNodeIds.has(t)
+      })]
+    } else {
+      finalNodes = rfNodes
+      finalEdges = visibleEdges
+    }
+
     // Apply dagre if needed
-    let finalNodes = rfNodes
-    if (layoutMode === "dagre") {
-      finalNodes = applyDagre(rfNodes, rfEdges.filter(e => !e.id.startsWith("sys_") && !e.id.startsWith("phase_")))
+    if (layoutMode === "dagre" && clusterBy === "none") {
+      finalNodes = applyDagre(finalNodes, finalEdges.filter(e => !e.id.startsWith("sys_") && !e.id.startsWith("phase_")))
     }
 
     setNodes(finalNodes)
-    setEdges(rfEdges)
+    setEdges(finalEdges)
     setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 50)
-  }, [layoutPositions, filtered, filteredIds, edgeList, layoutMode, showSystems, showPhases, analysisMode, cascadeSet, pathSet, orphans, centrality, selectedId, automations, setNodes, setEdges, fitView])
+  }, [layoutPositions, filtered, filteredIds, edgeList, layoutMode, showSystems, showPhases, analysisMode, cascadeSet, pathSet, orphans, centrality, selectedId, automations, clusterBy, expandedClusters, hiddenEdgeTypes, problemMap, setNodes, setEdges, fitView])
 
   // Automation view
   useEffect(() => {
@@ -589,6 +729,7 @@ function KennisGraafInner() {
   )
 
   const onNodeClick = useCallback((_: unknown, node: Node) => {
+    if (node.type === "cluster") return
     if (node.type !== "automation") return
     const id = node.id
     setSelectedId(id)
@@ -605,6 +746,23 @@ function KennisGraafInner() {
       }
     }
   }, [analysisMode, pathSource])
+
+  const onNodeDoubleClick = useCallback((_: unknown, node: Node) => {
+    if (node.type !== "cluster") return
+    const id = node.id
+    setExpandedClusters(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault()
+    if (node.type !== "automation") return
+    setContextMenu({ x: event.clientX, y: event.clientY, nodeId: node.id })
+  }, [])
 
   // Stats
   const stats = useMemo(() => ({
@@ -663,6 +821,9 @@ function KennisGraafInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onNodeDoubleClick={onNodeDoubleClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onPaneClick={() => setContextMenu(null)}
         nodeTypes={nodeTypes}
         colorMode="light"
         fitView
@@ -756,7 +917,7 @@ function KennisGraafInner() {
         <Panel position="top-right">
           <div style={{
             background: "#ffffff",
-            border: "1px solid #1e293b",
+            border: "1px solid #e2e8f0",
             borderRadius: 10,
             padding: 12,
             display: "flex",
@@ -887,6 +1048,73 @@ function KennisGraafInner() {
               )}
             </div>
 
+            {/* Clustering */}
+            <div>
+              <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Groeperen</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {([
+                  { id: "none" as const, label: "Uit" },
+                  { id: "categorie" as const, label: "Categorie" },
+                  { id: "systeem" as const, label: "Systeem" },
+                  { id: "fase" as const, label: "Fase" },
+                ]).map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { setClusterBy(opt.id); setExpandedClusters(new Set()) }}
+                    style={{
+                      padding: "4px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      border: `1px solid ${clusterBy === opt.id ? "#0ea5e9" : "#e2e8f0"}`,
+                      background: clusterBy === opt.id ? "#0ea5e922" : "transparent",
+                      color: clusterBy === opt.id ? "#0ea5e9" : "#64748b",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {clusterBy !== "none" && (
+                <div style={{ marginTop: 5, fontSize: 10, color: "#64748b" }}>
+                  Dubbelklik cluster om uit te klappen
+                </div>
+              )}
+            </div>
+
+            {/* Edge type filter */}
+            <div>
+              <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Relaties</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {([
+                  { id: "koppeling", label: "Koppelingen", color: "#6366f1" },
+                  { id: "system", label: "Systemen", color: "#0ea5e9" },
+                  { id: "phase", label: "Fasen", color: "#f43f5e" },
+                ] as { id: string; label: string; color: string }[]).map(et => {
+                  const hidden = hiddenEdgeTypes.has(et.id)
+                  return (
+                    <button
+                      key={et.id}
+                      onClick={() => setHiddenEdgeTypes(prev => {
+                        const next = new Set(prev)
+                        if (next.has(et.id)) next.delete(et.id)
+                        else next.add(et.id)
+                        return next
+                      })}
+                      style={{
+                        padding: "4px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                        border: `1px solid ${hidden ? "#e2e8f0" : et.color}`,
+                        background: hidden ? "transparent" : `${et.color}18`,
+                        color: hidden ? "#94a3b8" : et.color,
+                        cursor: "pointer",
+                        textDecoration: hidden ? "line-through" : "none",
+                      }}
+                    >
+                      {et.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Stats */}
             {stats.topNode && (
               <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
@@ -894,6 +1122,23 @@ function KennisGraafInner() {
                 <div style={{ fontSize: 11, color: "#6366f1" }}>{stats.topNode[0]}</div>
                 <div style={{ fontSize: 10, color: "#64748b" }}>{(stats.topNode[1] * 100).toFixed(0)}% centraliteit</div>
               </div>
+            )}
+
+            {/* Problems button */}
+            {problems.length > 0 && (
+              <button
+                onClick={() => setShowProblemPanel(!showProblemPanel)}
+                style={{
+                  marginTop: 4, padding: "7px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  border: `1px solid ${showProblemPanel ? "#ef4444" : "#fca5a5"}`,
+                  background: showProblemPanel ? "#fef2f2" : "#fff7f7",
+                  color: showProblemPanel ? "#ef4444" : "#f87171",
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <TriangleAlert size={13} />
+                {problems.length} problemen gevonden
+              </button>
             )}
           </div>
         </Panel>
@@ -925,7 +1170,7 @@ function KennisGraafInner() {
                     borderRadius: 6,
                     padding: "5px 8px 5px 26px",
                     fontSize: 12,
-                    color: "#e2e8f0",
+                    color: "#0f172a",
                     outline: "none",
                     boxSizing: "border-box",
                   }}
@@ -1055,6 +1300,134 @@ function KennisGraafInner() {
         </Panel>
       </ReactFlow>
 
+      {/* ── context menu ── */}
+      {contextMenu && (() => {
+        const auto = automations.find(a => a.id === contextMenu.nodeId)
+        const nodeProblems = problems.filter(p => p.automationId === contextMenu.nodeId)
+        const items: ContextMenuItem[] = [
+          {
+            label: "Detail bekijken",
+            icon: <CheckCircle size={13} />,
+            action: () => { setSelectedId(contextMenu.nodeId); setShowDetail(true) },
+          },
+          {
+            label: "Cascade analyse",
+            icon: <Zap size={13} />,
+            action: () => { setSelectedId(contextMenu.nodeId); setAnalysisMode("cascade") },
+          },
+          {
+            label: "Pad vanaf hier",
+            icon: <Share2 size={13} />,
+            action: () => { setAnalysisMode("path"); setPathSource(contextMenu.nodeId); setPathTarget(null) },
+          },
+          ...(nodeProblems.length > 0 ? [{
+            label: `${nodeProblems.length} problemen →`,
+            icon: <TriangleAlert size={13} />,
+            action: () => { setShowProblemPanel(true); setProblemFilter(contextMenu.nodeId) },
+            divider: true,
+          }] : []),
+        ]
+        return <ContextMenu x={contextMenu.x} y={contextMenu.y} items={items} onClose={() => setContextMenu(null)} />
+      })()}
+
+      {/* ── problem panel ── */}
+      {showProblemPanel && (
+        <div style={{
+          position: "absolute", top: 0, left: showFilters ? 224 : 0,
+          width: 340, height: "100%",
+          background: "#ffffff", borderRight: "1px solid #e2e8f0",
+          overflowY: "auto", zIndex: 10, padding: 16,
+          display: "flex", flexDirection: "column", gap: 12,
+          transition: "left 0.2s",
+        }}>
+          {/* Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <TriangleAlert size={15} color="#ef4444" />
+              <span style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
+                Problemen ({problems.length})
+              </span>
+            </div>
+            <button onClick={() => setShowProblemPanel(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}>
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Severity summary */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {(["all", "error", "warning", "info"] as const).map(f => {
+              const count = f === "all" ? problems.length : problems.filter(p => p.severity === f).length
+              const color = f === "all" ? "#64748b" : SEVERITY_COLORS[f]
+              return (
+                <button key={f}
+                  onClick={() => setProblemFilter(f)}
+                  style={{
+                    flex: 1, padding: "5px 4px", borderRadius: 7, fontSize: 10, fontWeight: 700,
+                    border: `1px solid ${problemFilter === f ? color : "#e2e8f0"}`,
+                    background: problemFilter === f ? `${color}18` : "transparent",
+                    color: problemFilter === f ? color : "#94a3b8",
+                    cursor: "pointer",
+                  }}>
+                  {f === "all" ? `Alle (${count})` : f === "error" ? `⛔ ${count}` : f === "warning" ? `⚠ ${count}` : `ℹ ${count}`}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Problem list */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {problems
+              .filter(p => {
+                if (problemFilter === "all") return true
+                if (problemFilter === "error" || problemFilter === "warning" || problemFilter === "info") return p.severity === problemFilter
+                return p.automationId === problemFilter
+              })
+              .map(p => (
+                <div key={p.id}
+                  onClick={() => { setSelectedId(p.automationId); setShowDetail(true); setShowProblemPanel(false) }}
+                  style={{
+                    border: `1px solid ${SEVERITY_COLORS[p.severity]}44`,
+                    borderLeft: `3px solid ${SEVERITY_COLORS[p.severity]}`,
+                    borderRadius: 8, padding: "10px 12px", background: `${SEVERITY_COLORS[p.severity]}08`,
+                    cursor: "pointer", transition: "background 0.1s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = `${SEVERITY_COLORS[p.severity]}14`)}
+                  onMouseLeave={e => (e.currentTarget.style.background = `${SEVERITY_COLORS[p.severity]}08`)}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>
+                        {p.naam}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#64748b" }}>{p.message}</div>
+                    </div>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, whiteSpace: "nowrap", padding: "2px 6px",
+                      borderRadius: 20, background: `${SEVERITY_COLORS[p.severity]}22`,
+                      color: SEVERITY_COLORS[p.severity], border: `1px solid ${SEVERITY_COLORS[p.severity]}66`,
+                    }}>
+                      {p.type.replace("-", " ")}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 10, color: "#475569", fontStyle: "italic" }}>
+                    💡 {p.suggestion}
+                  </div>
+                </div>
+              ))}
+            {problems.filter(p => {
+              if (problemFilter === "all") return true
+              if (problemFilter === "error" || problemFilter === "warning" || problemFilter === "info") return p.severity === problemFilter
+              return p.automationId === problemFilter
+            }).length === 0 && (
+              <div style={{ textAlign: "center", color: "#94a3b8", fontSize: 12, padding: 24 }}>
+                Geen problemen in deze categorie
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── detail panel ── */}
       {showDetail && selectedAuto && (
         <div
@@ -1077,7 +1450,7 @@ function KennisGraafInner() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700 }}>{selectedAuto.id}</div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "#e2e8f0", marginTop: 2 }}>{selectedAuto.naam}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", marginTop: 2 }}>{selectedAuto.naam}</div>
             </div>
             <button
               onClick={() => setShowDetail(false)}
