@@ -112,3 +112,30 @@ export default function Dashboard() {
     </div>
   );
 }
+
+function StatusList({ items }: { items: Automatisering[] }) {
+  if (items.length === 0) {
+    return <p className="text-muted-foreground text-sm py-4">Geen automatiseringen in deze categorie.</p>;
+  }
+  return (
+    <div className="space-y-2 mt-2">
+      {items.map((a) => (
+        <Link
+          key={a.id}
+          to={`/alle?open=${a.id}`}
+          className="bg-card border border-border rounded-[var(--radius-inner)] p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between shadow-sm hover:bg-secondary/50 transition-colors block"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="font-mono text-xs text-muted-foreground shrink-0">{a.id}</span>
+            <span className="font-medium text-foreground truncate">{a.naam}</span>
+            <CategorieBadge categorie={a.categorie} />
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <StatusBadge status={a.status} />
+            <span className="text-xs text-muted-foreground">{a.owner}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
