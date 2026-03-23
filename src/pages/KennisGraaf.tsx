@@ -5,7 +5,6 @@ import ReactFlow, {
   Controls,
   ReactFlowProvider,
   Edge,
-  EdgeLabelRenderer,
   MarkerType,
   MiniMap,
   Node,
@@ -19,10 +18,8 @@ import "@xyflow/react/dist/style.css"
 import * as dagre from "@dagrejs/dagre"
 import {
   AlertTriangle,
-  BookOpen,
   ChevronRight,
   Filter,
-  Focus,
   GitFork,
   Network,
   Search,
@@ -36,7 +33,7 @@ import { useAutomatiseringen } from "@/lib/hooks"
 import { Automatisering, berekenComplexiteit, berekenImpact, KlantFase, Systeem } from "@/lib/types"
 import { buildEdgeList, cascadeImpact, degreeCentrality, findOrphans, shortestPath } from "@/lib/graphAnalysis"
 import { runForceLayout, seedNodes } from "@/lib/forceLayout"
-import { Badge } from "@/components/ui/badge"
+
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
@@ -543,14 +540,14 @@ function KennisGraafInner() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+      <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#080812", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
         Kennisgraaf laden…
       </div>
     )
   }
 
   return (
-    <div style={{ width: "100%", height: "100vh", background: "#080812", position: "relative" }}>
+    <div style={{ width: "100%", height: "calc(100vh - 48px)", background: "#080812", position: "relative", overflow: "hidden" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
