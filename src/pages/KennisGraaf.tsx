@@ -805,7 +805,7 @@ function KennisGraafInner() {
             automations={automations}
             showSystems={showSystems}
             showPhases={showPhases}
-            analysisMode={analysisMode}
+            analysisMode={analysisMode === "path" ? "none" : analysisMode}
           />
         </Suspense>
       </div>

@@ -9,7 +9,7 @@ export interface ClusterNodeData {
 }
 
 export function ClusterNode({ data }: NodeProps) {
-  const d = data as ClusterNodeData
+  const d = data as unknown as ClusterNodeData
   const severityColor = d.severity === "error" ? "#ef4444"
     : d.severity === "warning" ? "#f59e0b"
     : null
